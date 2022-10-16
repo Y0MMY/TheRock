@@ -1,0 +1,12 @@
+# Binaries
+**/bin/
+!vendor/bin/premake/
+!RockEngine/vendor/mono/bin
+bin-int/
+
+# Visual Studio files and folder
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
