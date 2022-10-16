@@ -1,4 +1,4 @@
-workspace "Hazel"
+workspace "Engine"
 	architecture "x64"
 	targetdir "build"
 	
@@ -9,15 +9,21 @@ workspace "Hazel"
         "Dist"
     }
     
+    startproject "Sandbox"
+    
 local outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-project "Hazel"
-    location "Hazel"
-    kind "SharedLib"
+group "Core"
+project "Engine"
+    location "Engine"
+    kind "StaticLib"
     language "C++"
     
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+    pchheader "pch.h"
+	pchsource "Engine/src/pch.cpp"
 
 	files 
 	{ 
@@ -39,25 +45,24 @@ project "Hazel"
         
 		defines 
 		{ 
-            "HZ_PLATFORM_WINDOWS",
-            "HAZEL_BUILD_DLL",
+            "RE_PLATFORM_WINDOWS",
 		}
 					
     filter "configurations:Debug"
-        defines "HZ_DEBUG"
+        defines "RE_DEBUG"
         symbols "On"
                 
     filter "configurations:Release"
-        defines "HZ_RELEASE"
+        defines "RE_RELEASE"
         optimize "On"
 
     filter "configurations:Dist"
-        defines "HZ_DIST"
+        defines "RE_DIST"
         optimize "On"
 
-    filter { "system:windows", "configurations:Release" }
-        buildoptions "/MT"
+group ""
 
+group "Tools"
 project "Sandbox"
     location "Sandbox"
     kind "ConsoleApp"
@@ -68,7 +73,7 @@ project "Sandbox"
 
 	dependson 
 	{ 
-		"Hazel"
+		"Engine"
     }
     
 	files 
@@ -82,8 +87,8 @@ project "Sandbox"
 	includedirs 
 	{
         "%{prj.name}/src",
-        "Hazel/src",
-        "Hazel/vendor",
+        "Engine/src",
+        "Engine/vendor",
     }
 	
 	filter "system:windows"
@@ -92,30 +97,23 @@ project "Sandbox"
         
 		links 
 		{ 
-			"Hazel"
+			"Engine"
 		}
         
 		defines 
 		{ 
-            "HZ_PLATFORM_WINDOWS",
+            "RE_PLATFORM_WINDOWS",
 		}
     
-        postbuildcommands
-        {
-            ("{COPY} ../bin/" .. outputdir .. "/Hazel/Hazel.dll %{cfg.targetdir}")
-        }
-    
     filter "configurations:Debug"
-        defines "HZ_DEBUG"
+        defines "RE_DEBUG"
         symbols "On"
                 
     filter "configurations:Release"
-        defines "HZ_RELEASE"
+        defines "RE_RELEASE"
         optimize "On"
 
     filter "configurations:Dist"
-        defines "HZ_DIST"
+        defines "RE_DIST"
         optimize "On"
-
-    filter { "system:windows", "configurations:Release" }
-        buildoptions "/MT"        
+group ""

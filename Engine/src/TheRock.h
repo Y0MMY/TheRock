@@ -4,9 +4,12 @@
 //
 #pragma once
 
-#include "Hazel/Core/Application.h"
-#include "Hazel/Core/Log.h"
+#include "TheRock/Core/Application.h"
+#include "TheRock/Core/Log.h"
 
-// ---Entry Point------------
-#include "Hazel/EntryPoint.h"
-// --------------------------
+// -----Events----
+#include "TheRock/Core/Events/Event.h"
+#include "TheRock/Core/Events/ApplicationEvent.h"
+#include "TheRock/Core/Events/KeyEvent.h"
+#include "TheRock/Core/Events/MouseEvent.h"
+//----------------
