@@ -24,12 +24,14 @@ namespace RockEngine
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		Window(const WindowProps& props);
 		virtual ~Window(){}
 
+		virtual void OnUpdate() = 0;
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 
 		virtual u32 GetWidth() const = 0;
 		virtual u32 GetHeight() const = 0;
+
+		static Window* Create(const WindowProps& props = WindowProps());
 	};
 }

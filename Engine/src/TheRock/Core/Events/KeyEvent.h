@@ -9,7 +9,7 @@ namespace RockEngine
 	{
 	public:
 		inline KeyCode GetKeyCode() const { return m_KeyCode; }
-		EVENT_CLASS_CATEGORY(EventCategory::EventCategoryInput | EventCategory::EventCategoryKeyboard)
+		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryKeyboard)
 	protected:
 		KeyEvent(KeyCode key)
 			: m_KeyCode(key){}
@@ -33,6 +33,6 @@ namespace RockEngine
 	public:
 		KeyReleasedEvent(KeyCode key)
 			: KeyEvent(key){}
-		EVENT_CLASS_TYPE(EventType::KeyReleased)
+		EVENT_CLASS_TYPE(KeyReleased)
 	};
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TheRock/Core/Base.h"
+#include "Window.h"
 
 namespace RockEngine
 {
@@ -21,7 +22,8 @@ namespace RockEngine
 		virtual void OnInit() {}
 		virtual void OnShutdown() {}
 		virtual void OnUpdate() {}
-
+	private:
+		Scope<Window> m_Window;
 	};
 
 	// Implemented by CLIENT

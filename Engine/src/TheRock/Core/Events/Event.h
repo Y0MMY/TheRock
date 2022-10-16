@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+#include "pch.h"
 
 
 namespace RockEngine
@@ -8,20 +8,20 @@ namespace RockEngine
 	enum class EventType
 	{
 		None = 0,
-		WindowClosed, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
+		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
 		AppTick, AppUpdate, AppRender,
-		KeyPressed, KeyReleased,
-		MouseButtonPressed, MouseButtonReleased, MouseMoved
+		KeyPressed, KeyReleased, KeyTyped,
+		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
 
-	enum class EventCategory
+	enum EventCategory
 	{
 		None = 0,
-		EventCategoryApplication		= BIT(0),
-		EventCategoryInput				= BIT(1),
-		EventCategoryKeyboard			= BIT(2),
-		EventCategoryMouse				= BIT(3),
-		EventCategoryMouseButton		= BIT(4)
+		EventCategoryApplication = BIT(0),
+		EventCategoryInput = BIT(1),
+		EventCategoryKeyboard = BIT(2),
+		EventCategoryMouse = BIT(3),
+		EventCategoryMouseButton = BIT(4)
 	};
 
 #define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::##type; }\
@@ -42,7 +42,7 @@ namespace RockEngine
 		virtual const char* GetName() const = 0;
 		virtual int GetCategoryFlags() const = 0;
 
-		bool IsInCategory(EventCategory category)
+		inline bool IsInCategory(EventCategory category)
 		{
 			return GetCategoryFlags() & category;
 		}

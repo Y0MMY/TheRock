@@ -13,7 +13,7 @@ namespace RockEngine
 		float inline GetX() const { return m_MouseX; }
 		float inline GetY() const { return m_MouseY; }
 
-		EVENT_CLASS_TYPE(EventType::MouseMoved)
+		EVENT_CLASS_TYPE(MouseMoved)
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 	private:
 		float m_MouseX, m_MouseDX;
@@ -46,6 +46,10 @@ namespace RockEngine
 		MouseButtonPressedEvent(int button, int repeatCount)
 			: MouseButtonEvent(button), m_RepeatCount(repeatCount)
 		{}
+
+		inline int GetRepeatCount() const { return m_RepeatCount; }
+
+		EVENT_CLASS_TYPE(MouseButtonPressed)
 	private:
 		int m_RepeatCount;
 	};
