@@ -7,8 +7,8 @@ namespace RockEngine
 	class MouseMovedEvent : public Event
 	{
 	public:
-		MouseMovedEvent(float x, float y, float dx, float dy)
-			: m_MouseX(x), m_MouseY(y),m_MouseDX(dx),m_MouseDY(dy) {}
+		MouseMovedEvent(float x, float y)
+			: m_MouseX(x), m_MouseY(y) {}
 
 		float inline GetX() const { return m_MouseX; }
 		float inline GetY() const { return m_MouseY; }
@@ -16,8 +16,8 @@ namespace RockEngine
 		EVENT_CLASS_TYPE(MouseMoved)
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 	private:
-		float m_MouseX, m_MouseDX;
-		float m_MouseY, m_MouseDY;
+		float m_MouseX;
+		float m_MouseY;
 	};
 
 	class MouseButtonEvent : public Event
@@ -34,6 +34,7 @@ namespace RockEngine
 
 	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
+	public:
 		MouseButtonReleasedEvent(int button)
 			: MouseButtonEvent(button) {}
 		EVENT_CLASS_TYPE(MouseButtonReleased)
@@ -43,14 +44,26 @@ namespace RockEngine
 	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(int button, int repeatCount)
-			: MouseButtonEvent(button), m_RepeatCount(repeatCount)
+		MouseButtonPressedEvent(int button)
+			: MouseButtonEvent(button)
 		{}
-
-		inline int GetRepeatCount() const { return m_RepeatCount; }
-
 		EVENT_CLASS_TYPE(MouseButtonPressed)
 	private:
-		int m_RepeatCount;
+		
+	};
+
+	class MouseScrolledEvent : public Event {
+	public:
+		MouseScrolledEvent(float xOffset, float yOffset)
+			: m_XOffset(xOffset), m_YOffset(yOffset) {}
+
+		inline float GetXOffset() const { return m_XOffset; }
+		inline float GetYOffset() const { return m_YOffset; }
+
+		EVENT_CLASS_TYPE(MouseScrolled)
+		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
+
+	private:
+		float m_XOffset, m_YOffset;
 	};
 }

@@ -11,7 +11,24 @@ workspace "Engine"
     
     startproject "Sandbox"
     
-local outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+
+-- Include directories relative to root folder (solution directory)
+
+IncludeDir = {}
+IncludeDir["GLFW"]  = "Engine/vendor/GLFW/include"
+IncludeDir["Glad"]  = "Engine/vendor/Glad/include"
+IncludeDir["ImGui"] = "Engine/vendor/ImGui"
+
+
+group "Dependencies"
+include "Engine/vendor/GLFW"
+include "Engine/vendor/Glad"
+include "Engine/vendor/ImGui"
+
+group ""
+
 
 group "Core"
 project "Engine"
@@ -27,18 +44,32 @@ project "Engine"
 
 	files 
 	{ 
-		"%{prj.name}/**.h", 
-		"%{prj.name}/**.c", 
-		"%{prj.name}/**.hpp", 
-		"%{prj.name}/**.cpp" 
+		"%{prj.name}/src/**.h", 
+		"%{prj.name}/src/**.c", 
+		"%{prj.name}/src/**.hpp", 
+		"%{prj.name}/src/**.cpp" 
+
     }
 
     includedirs
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/vendor",
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.ImGui}"
+
 	}
     
+    links
+    {
+        "opengl32.lib",
+        "GLFW",
+        "Glad",
+        "ImGui",
+
+    }
+
 	filter "system:windows"
 		cppdialect "C++17"
         staticruntime "On"
@@ -78,10 +109,11 @@ project "Sandbox"
     
 	files 
 	{ 
-		"%{prj.name}/**.h", 
-		"%{prj.name}/**.c", 
-		"%{prj.name}/**.hpp", 
-		"%{prj.name}/**.cpp" 
+		"%{prj.name}/src/**.h", 
+		"%{prj.name}/src/**.c", 
+		"%{prj.name}/src/**.hpp", 
+		"%{prj.name}/src/**.cpp" 
+
 	}
     
 	includedirs 
@@ -108,7 +140,12 @@ project "Sandbox"
     filter "configurations:Debug"
         defines "RE_DEBUG"
         symbols "On"
-                
+        
+        links
+        {
+            "Engine/vendor/ImGui/bin/Debug-windows-x86_64/ImGui/ImGui.lib",
+        }
+
     filter "configurations:Release"
         defines "RE_RELEASE"
         optimize "On"
@@ -117,3 +154,6 @@ project "Sandbox"
         defines "RE_DIST"
         optimize "On"
 group ""
+
+
+-- "Engine/vendor/ImGui/bin/Debug-windows-x86_64/ImGui/ImGui.lib",

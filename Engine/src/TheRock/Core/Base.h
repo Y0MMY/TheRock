@@ -16,7 +16,19 @@ namespace RockEngine
 // __VA_ARGS__ expansion to get past MSVC "bug"
 #define RE_EXPAND_VARGS(x) x
 
+// bits shift
 #define BIT(x) (1 << x)
+
+// Lambda function to bind events
+#define BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) \
+{ \
+	return this->fn(std::forward<decltype(args)>(args)...); \
+}
+
+// ZeroMemory function
+//#ifndef ZeroMemory
+//	#define ZeroMemory(Destination,Length) memset((Destination),0,(Length))
+//#endif
 
 #include "Assert.h" 
 

@@ -19,6 +19,7 @@ namespace RockEngine
 
 	class KeyPressedEvent : public KeyEvent
 	{
+	public:
 		KeyPressedEvent(KeyCode key, int repeatCount)
 			: KeyEvent(key), m_RepeatCount(repeatCount) {}
 
@@ -26,6 +27,18 @@ namespace RockEngine
 		EVENT_CLASS_TYPE(KeyPressed)
 	private:
 		int m_RepeatCount;
+	};
+
+	class KeyTypedEvent : public KeyEvent
+	{
+	public:
+		KeyTypedEvent(KeyCode key)
+			:
+			 KeyEvent(key) {}
+
+		EVENT_CLASS_TYPE(KeyTyped)
+	private:
+		KeyCode m_KeyCode;
 	};
 
 	class KeyReleasedEvent : public KeyEvent

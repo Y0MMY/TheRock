@@ -35,6 +35,7 @@ namespace RockEngine
 	{
 		friend class EventDispatcher;
 	public:
+		bool Handled = false;
 		Event() = default;
 		virtual ~Event(){}
 
@@ -47,7 +48,6 @@ namespace RockEngine
 			return GetCategoryFlags() & category;
 		}
 	private:
-		bool m_Handled = false;
 	};
 
 	class EventDispatcher
@@ -59,11 +59,11 @@ namespace RockEngine
 			:m_Event(event)
 		{}
 		template<typename T>
-		bool Dispatch(EventFn<T>& fn)
+		bool Dispatch(EventFn<T> func)
 		{
-			if (m_Event.GetCategoryFlags() == T::GetEventType())
+			if (m_Event.GetEventType() == T::GetStaticType())
 			{
-				m_Event.m_Handled = fn(*(T)&m_Event);
+				m_Event.Handled = func(*(T*)&m_Event);
 				return true;
 			}
 			return false;

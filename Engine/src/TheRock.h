@@ -7,9 +7,15 @@
 #include "TheRock/Core/Application.h"
 #include "TheRock/Core/Log.h"
 
-// -----Events----
+// ------ Events ------------------------------------
 #include "TheRock/Core/Events/Event.h"
 #include "TheRock/Core/Events/ApplicationEvent.h"
 #include "TheRock/Core/Events/KeyEvent.h"
 #include "TheRock/Core/Events/MouseEvent.h"
-//----------------
+// ---------------------------------------------------
+
+// --- TheRock Render API ----------------------------
+
+#include "TheRock/Renderer/Renderer.h"
+
+// ---------------------------------------------------

@@ -28,10 +28,10 @@ namespace RockEngine
 
 
 // Client Logging Macros
-#define RE_TRACE(...)		RockEngine::Log::GetClientLogger()->trace(__VA_ARGS__);
-#define RE_INFO(...)			RockEngine::Log::GetClientLogger()->info(__VA_ARGS__);
-#define RE_WARN(...)			RockEngine::Log::GetClientLogger()->warn(__VA_ARGS__);
-#define RE_ERROR(...)		RockEngine::Log::GetClientLogger()->error(__VA_ARGS__);
-#define RE_FATAL(...)		RockEngine::Log::GetClientLogger()->critical(__VA_ARGS__);
+#define RE_TRACE(...)				RockEngine::Log::GetClientLogger()->trace(__VA_ARGS__);
+#define RE_INFO(...)				RockEngine::Log::GetClientLogger()->info(__VA_ARGS__);
+#define RE_WARN(...)				RockEngine::Log::GetClientLogger()->warn(__VA_ARGS__);
+#define RE_ERROR(...)				RockEngine::Log::GetClientLogger()->error(__VA_ARGS__);
+#define RE_FATAL(...)				RockEngine::Log::GetClientLogger()->critical(__VA_ARGS__);
 
 
