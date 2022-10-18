@@ -20,20 +20,51 @@ public:
 
 	virtual void OnAttach() override
 	{
+		static float vertices[] = {
+			-0.5f, -0.5f, 0.0f,
+			 0.5f, -0.5f, 0.0f,
+			 0.0f,  0.5f, 0.0f
+		};
+
+		static unsigned int indices[] = {
+			0, 1, 2
+		};
+
+		m_VB = RockEngine::Scope<RockEngine::VertexBuffer>(RockEngine::VertexBuffer::Create());
+		m_VB->SetData(vertices, sizeof(vertices));
+
+		m_IB = std::unique_ptr<RockEngine::IndexBuffer>(RockEngine::IndexBuffer::Create());
+		m_IB->SetData(indices, sizeof(indices));
+
 	}
 
 	virtual void OnDetach() override
 	{
 	}
 
+	virtual void OnImGuiRender()
+	{
+		ImGui::Begin("GameLayer");
+		ImGui::ColorEdit4("Clear Color", m_ClearColor);
+		ImGui::End();
+	}
+
 	virtual void OnUpdate() override
 	{
-		RockEngine::Renderer::Clear(0.2f, 0.3f, 0.8f, 1);
+		RockEngine::Renderer::Clear(m_ClearColor[0], m_ClearColor[1], m_ClearColor[2], m_ClearColor[3]);
+		m_VB->Bind();
+		m_IB->Bind();
+		RockEngine::Renderer::DrawIndexed(3);
 	}
 
 	virtual void OnEvent(RockEngine::Event& event) override
 	{
 	}
+private:
+	std::unique_ptr<RockEngine::VertexBuffer> m_VB;
+	std::unique_ptr<RockEngine::IndexBuffer> m_IB;
+	float m_ClearColor[4];
+
 };
 
 

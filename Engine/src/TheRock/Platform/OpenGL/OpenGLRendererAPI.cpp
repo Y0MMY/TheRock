@@ -5,6 +5,24 @@
 
 namespace RockEngine
 {
+	void RendererAPI::Init()
+	{
+		unsigned int vao;
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+
+	}
+
+	void RendererAPI::Shutdown()
+	{
+
+	}
+
+	void RendererAPI::DrawIndexed(u32 count)
+	{
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+	}
+
 	void RendererAPI::Clear(float r, float g, float b, float a)
 	{
 		glClearColor(r, g, b, a);

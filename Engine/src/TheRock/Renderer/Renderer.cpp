@@ -1,14 +1,31 @@
 #include "pch.h"
 #include "Renderer.h"
-#include "RenderCommand.h"
 
 namespace RockEngine {
 
-	Renderer* Renderer::s_Instance = new Renderer();
+	RendererAPIType RendererAPI::s_CurrentRendererAPI = RendererAPIType::OpenGL;
+
+	struct RendererData
+	{
+		RenderCommandQueue m_CommandQueue;
+	};
+
+	static RendererData s_Data;
 
 	void Renderer::Init()
 	{
+		Renderer::Submit([=]() mutable
+			{
+				RendererAPI::Init();
+			});
+	}
 
+	void Renderer::DrawIndexed(u32 count)
+	{
+		Renderer::Submit([=]()
+			{
+				RendererAPI::DrawIndexed(count);
+			});
 	}
 
 	void Renderer::Clear()
@@ -18,8 +35,10 @@ namespace RockEngine {
 
 	void Renderer::Clear(float r, float g, float b, float a)
 	{
-		float params[4] = { r, g, b, a };
-		s_Instance->m_CommandQueue.SubmitCommand(RenderCommand::Clear, params, sizeof(float) * 4);
+		Renderer::Submit([=]()
+			{
+				RendererAPI::Clear(r, g, b, a);
+			});
 	}
 
 	void Renderer::ClearMagenta()
@@ -34,7 +53,12 @@ namespace RockEngine {
 
 	void Renderer::WaitAndRender()
 	{
-		s_Instance->m_CommandQueue.Execute();
+		s_Data.m_CommandQueue.Execute();
+	}
+
+	RenderCommandQueue& Renderer::GetRenderCommandQueue()
+	{
+		return s_Data.m_CommandQueue;
 	}
 
 }

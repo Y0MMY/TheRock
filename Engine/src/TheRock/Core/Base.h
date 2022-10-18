@@ -26,9 +26,9 @@ namespace RockEngine
 }
 
 // ZeroMemory function
-//#ifndef ZeroMemory
-//	#define ZeroMemory(Destination,Length) memset((Destination),0,(Length))
-//#endif
+#ifndef ZeroMemory
+	#define ZeroMemory(Destination,Length) memset((Destination),0,(Length))
+#endif
 
 #include "Assert.h" 
 

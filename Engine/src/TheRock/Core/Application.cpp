@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Application.h"
 
+#include <imgui/imgui.h>
+
 #include "TheRock/Renderer/Renderer.h"
 
 #include <GLFW/glfw3.h>
@@ -18,6 +20,8 @@ namespace RockEngine
 
 		m_ImGuiLayer = new ImGuiLayer("ImGui");
 		PushOverlay(m_ImGuiLayer);
+
+		Renderer::Init();
 	}
 
 	void Application::OnEvent(Event& e)
@@ -68,7 +72,8 @@ namespace RockEngine
 	void Application::RenderImGui()
 	{
 		m_ImGuiLayer->Begin();
-
+		ImGui::Begin("Renderer");
+		ImGui::End();
 		for (Layer* layer : m_LayerStack)
 			layer->OnImGuiRender();
 		m_ImGuiLayer->End();
@@ -82,8 +87,8 @@ namespace RockEngine
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
 
+			Renderer::WaitAndRender();
 			RenderImGui();
-			Renderer::Get().WaitAndRender();
 			m_Window->OnUpdate();
 		}
 		OnShutdown();
