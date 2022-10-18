@@ -7,9 +7,9 @@ namespace RockEngine
 {
 	void RendererAPI::Init()
 	{
-		unsigned int vao;
+		/*unsigned int vao;
 		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
+		glBindVertexArray(vao);*/
 
 	}
 
