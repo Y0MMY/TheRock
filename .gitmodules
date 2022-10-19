@@ -4,3 +4,6 @@
 [submodule "Engine/vendor/ImGui"]
 	path = Engine/vendor/ImGui
 	url = https://github.com/Y0MMY/imgui
+[submodule "Engine/vendor/glm"]
+	path = Engine/vendor/glm
+	url = https://github.com/g-truc/glm

@@ -135,5 +135,36 @@ namespace RockEngine
 		m_RendererID = program;
 	}
 
+	void OpenGLShader::UploadUniformFloat(const std::string& name, float value)
+	{
+		glUseProgram(m_RendererID);
+		glUniform1f(glGetUniformLocation(m_RendererID, name.c_str()), value);
+	}
 
+	void OpenGLShader::UploadUniformFloat4(const std::string& name, const glm::vec4& values)
+	{
+		glUseProgram(m_RendererID);
+		glUniform4f(glGetUniformLocation(m_RendererID, name.c_str()), values.x, values.y, values.z, values.w);
+	}
+
+
+	void OpenGLShader::UploadUniformBuffer(const UniformBufferBase& uniformBuffer)
+	{
+		for (u32 i = 0; i < uniformBuffer.GetUniformCount(); ++i)
+		{
+			const UniformDecl& decl = uniformBuffer.GetUniforms()[i];
+			switch (decl.Type)
+			{
+				case UniformType::Float:
+				{
+					UploadUniformFloat(decl.Name, *(float*)(uniformBuffer.GetBuffer() + decl.Offset));
+				}
+				
+				case UniformType::Float4:
+				{
+					UploadUniformFloat4(decl.Name, *(glm::vec4*)(uniformBuffer.GetBuffer() + decl.Offset));
+				}
+			}
+		}
+	}
 }

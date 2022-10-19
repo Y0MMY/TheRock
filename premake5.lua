@@ -20,7 +20,7 @@ IncludeDir = {}
 IncludeDir["GLFW"]  = "Engine/vendor/GLFW/include"
 IncludeDir["Glad"]  = "Engine/vendor/Glad/include"
 IncludeDir["ImGui"] = "Engine/vendor/ImGui"
-
+IncludeDir["glm"] = "Engine/vendor/glm"
 
 group "Dependencies"
 include "Engine/vendor/GLFW"
@@ -35,7 +35,8 @@ project "Engine"
     location "Engine"
     kind "StaticLib"
     language "C++"
-    
+    staticruntime "off"
+
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
@@ -57,7 +58,8 @@ project "Engine"
 		"%{prj.name}/vendor",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
-        "%{IncludeDir.ImGui}"
+        "%{IncludeDir.ImGui}",
+        "%{IncludeDir.glm}",
 
 	}
     
@@ -98,7 +100,8 @@ project "Sandbox"
     location "Sandbox"
     kind "ConsoleApp"
     language "C++"
-    
+    staticruntime "off"
+
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
@@ -121,6 +124,7 @@ project "Sandbox"
         "%{prj.name}/src",
         "Engine/src",
         "Engine/vendor",
+        "%{IncludeDir.glm}"
     }
 	
 	filter "system:windows"
