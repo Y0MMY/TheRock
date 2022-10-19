@@ -36,7 +36,7 @@ public:
 		m_IB = std::unique_ptr<RockEngine::IndexBuffer>(RockEngine::IndexBuffer::Create());
 		m_IB->SetData(indices, sizeof(indices));
 
-		auto shader = RockEngine::Shader::Create("assets/shaders/shader.glsl");
+		m_Shader.reset(RockEngine::Shader::Create("assets/shaders/shader.glsl"));
 	}
 
 	virtual void OnDetach() override
@@ -55,6 +55,7 @@ public:
 		RockEngine::Renderer::Clear(m_ClearColor[0], m_ClearColor[1], m_ClearColor[2], m_ClearColor[3]);
 		m_VB->Bind();
 		m_IB->Bind();
+		m_Shader->Bind();
 		RockEngine::Renderer::DrawIndexed(3);
 	}
 
@@ -62,8 +63,11 @@ public:
 	{
 	}
 private:
-	std::unique_ptr<RockEngine::VertexBuffer> m_VB;
-	std::unique_ptr<RockEngine::IndexBuffer> m_IB;
+	RockEngine::Scope<RockEngine::VertexBuffer> m_VB;
+	RockEngine::Scope<RockEngine::IndexBuffer> m_IB;
+
+	RockEngine::Scope<RockEngine::Shader> m_Shader;
+
 	float m_ClearColor[4];
 
 };

@@ -2,6 +2,8 @@
 
 #include "TheRock/Renderer/Shader.h"
 
+#include <Glad/glad.h>
+
 namespace RockEngine
 {
 
@@ -25,7 +27,7 @@ namespace RockEngine
 		void ReadShaderFromFile(const std::string& filepath);
 		void CompileAndUploadShader();
 
-		static ShaderType ShaderTypeFromString(const std::string& type);
+		static GLenum ShaderTypeFromString(const std::string& type);
 	private:
 		RendererID m_RendererID;
 		std::string m_ShaderSource;
