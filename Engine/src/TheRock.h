@@ -18,10 +18,7 @@
 #include "ImGui/imgui.h"
 #include "TheRock/Renderer/Renderer.h"
 //#include "TheRock/Renderer/FrameBuffer.h"
-#include "TheRock/Renderer/VertexBuffer.h"
-#include "TheRock/Renderer/IndexBuffer.h"
+#include "TheRock/Renderer/Buffer.h"
 #include "TheRock/Renderer/Texture.h"
 #include "TheRock/Renderer/Shader.h"
-
-
 // ---------------------------------------------------

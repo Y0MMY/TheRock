@@ -6,17 +6,6 @@
 
 namespace RockEngine
 {
-
-	enum class ShaderType
-	{
-		None = 0,
-		Vertex = 1,
-
-		// Fragment and Pixel shaders are the same
-		Fragment = 2,
-		Pixel = 2,
-	};
-
 	class OpenGLShader : public Shader
 	{
 	public:
