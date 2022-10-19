@@ -8,6 +8,15 @@
 
 namespace RockEngine
 {
+	ShaderType OpenGLShader::ShaderTypeFromString(const std::string& type)
+	{
+		if (type == "vertex")
+			return ShaderType::Vertex;
+		if (type == "fragment" || type == "pixel")
+			return ShaderType::Fragment;
+		return ShaderType::None;
+	}
+
 
 	OpenGLShader::OpenGLShader(const std::string filepath)
 	{
@@ -56,22 +65,26 @@ namespace RockEngine
 			printf("%s \n", token.c_str());
 		}
 
-		std::array<size_t, 4> typePositions;
-		typePositions.fill(std::string::npos);
-		u32 typePositionIndex = 0;
+		std::unordered_map<ShaderType, std::string> shaderSources;
+
 		const char* typeToken = "#type";
+		size_t typeTokenLength = strlen(typeToken);
 		size_t pos = m_ShaderSource.find(typeToken, 0);
 
 		while (pos != std::string::npos)
 		{
-			size_t eol = m_ShaderSource.find('\n', pos);
+			size_t eol = m_ShaderSource.find_first_of("\r\n", pos);
 			RE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			std::string type = m_ShaderSource.substr(pos, eol);
+			size_t begin = pos + typeTokenLength + 1;
+			std::string type = m_ShaderSource.substr(begin, eol - begin);
+			RE_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel", "Invalid shader type specified");
 
-			typePositions[typePositionIndex++] = pos;
-			pos = m_ShaderSource.find(typeToken, pos + 1);
+			size_t nextLinePos = m_ShaderSource.find_first_not_of("\r\n", eol);
+			pos = m_ShaderSource.find(typeToken, nextLinePos);
 
+			shaderSources[ShaderTypeFromString(type)] = m_ShaderSource.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? m_ShaderSource.size() - 1 : nextLinePos));
 		}
 	}
+
 
 }
