@@ -20,7 +20,8 @@
 //#include "TheRock/Renderer/FrameBuffer.h"
 #include "TheRock/Renderer/VertexBuffer.h"
 #include "TheRock/Renderer/IndexBuffer.h"
-//#include "TheRock/Renderer/Texture.h"
+#include "TheRock/Renderer/Texture.h"
+#include "TheRock/Renderer/Shader.h"
 
 
 // ---------------------------------------------------
