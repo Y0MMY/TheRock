@@ -36,6 +36,8 @@ namespace RockEngine
 
 		inline Window& GetWindow() { return *m_Window; }
 		static inline Application& Get() { return *s_Instance; }
+
+		std::string OpenFile(const std::string& filter = "All\0*.*\0") const;
 	private:
 		bool OnWindowResize(WindowResizeEvent& e);
 		bool OnWindowClose(WindowCloseEvent& e);

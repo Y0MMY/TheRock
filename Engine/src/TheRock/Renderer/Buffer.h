@@ -13,6 +13,8 @@ namespace RockEngine
 		virtual void SetData(void* data, u32 size, u32 offset = 0) = 0;
 		virtual void Bind() const = 0;
 
+		virtual u32 GetCount() const = 0;
+
 		virtual u32 GetSize() const = 0;
 		virtual RendererID GetRendererID() const = 0;
 

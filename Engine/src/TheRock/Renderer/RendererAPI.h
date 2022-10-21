@@ -2,7 +2,17 @@
 
 namespace RockEngine
 {
-	using RendererID = unsigned int;
+	using RendererID = u32;
+
+	struct RenderAPICapabilities
+	{
+		std::string Vendor;
+		std::string Renderer;
+		std::string Version;
+
+		int MaxSamples;
+		float MaxAnisotropy;
+	};
 
 	enum class RendererAPIType
 	{
@@ -18,7 +28,13 @@ namespace RockEngine
 
 		static void Clear(float r, float g, float b, float a);
 		static void SetClearColor(float r, float g, float b, float a);
-		static void DrawIndexed(u32 count);
+		static void DrawIndexed(u32 count, bool depthTest = true);
+		static RenderAPICapabilities& GetCapabilities()
+		{
+			static RenderAPICapabilities capabilities;
+			return capabilities;
+		}
+
 	public:
 		static RendererAPIType Current() { return s_CurrentRendererAPI; }
 	private:

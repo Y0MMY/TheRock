@@ -33,7 +33,7 @@ namespace RockEngine
 			new (storageBuffer) FuncT(std::forward<FuncT>(func));
 		}
 		static void WaitAndRender();
-		static void DrawIndexed(u32 count);
+		static void DrawIndexed(u32 count, bool depthTest = true);
 	private:
 		static RenderCommandQueue& GetRenderCommandQueue();
 	};

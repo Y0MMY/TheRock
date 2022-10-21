@@ -6,6 +6,14 @@
 
 namespace RockEngine
 {
+
+#define UNIFORM_LOGGING 1
+#if UNIFORM_LOGGING
+#define RE_LOG_UNIFORM(...) RE_CORE_WARN(__VA_ARGS__)
+#else
+#define RE_LOG_UNIFORM
+#endif
+
 	GLenum OpenGLShader::ShaderTypeFromString(const std::string& type)
 	{
 		if (type == "vertex")
@@ -15,14 +23,24 @@ namespace RockEngine
 		return GL_NONE;
 	}
 
-
 	OpenGLShader::OpenGLShader(const std::string filepath)
+		: m_AssetPath(filepath)
 	{
-		ReadShaderFromFile(filepath);
+		size_t found = filepath.find_last_of("/\\");
+		m_Name = found != std::string::npos ? filepath.substr(found + 1) : filepath;
+		Reload();
+	}
+
+	void OpenGLShader::Reload()
+	{
+		ReadShaderFromFile(m_AssetPath);
+		if (m_RendererID)
+			glDeleteShader(m_RendererID);
+
 		CompileAndUploadShader();
 	}
 
-	void OpenGLShader::Bind() const
+	void OpenGLShader::Bind() 
 	{
 		Renderer::Submit([=]()
 			{
@@ -133,20 +151,83 @@ namespace RockEngine
 			glDeleteShader(id);
 
 		m_RendererID = program;
+
+		// Bind default texture unit
+		UploadUniformInt("u_Texture", 0);
+
+		// PBR shader textures
+		UploadUniformInt("u_AlbedoTexture", 1);
+		UploadUniformInt("u_NormalTexture", 2);
+		UploadUniformInt("u_MetalnessTexture", 3);
+		UploadUniformInt("u_RoughnessTexture", 4);
+
+		UploadUniformInt("u_EnvRadianceTex", 10);
+		UploadUniformInt("u_EnvIrradianceTex", 11);
+
+		UploadUniformInt("u_BRDFLUTTexture", 15);
+
+	}
+
+	void OpenGLShader::SetFloat(const std::string& name, float value)
+	{
+		UploadUniformFloat(name, value);
+	}
+
+	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
+	{
+		UploadUniformMat4(name, value);
+	}
+
+	void OpenGLShader::UploadUniformInt(const std::string& name, int value)
+	{
+		glUseProgram(m_RendererID);
+		auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		if (location != -1)
+			glUniform1i(location, value);
+		else
+			RE_LOG_UNIFORM("Uniform '{0}' not found!", name);
 	}
 
 	void OpenGLShader::UploadUniformFloat(const std::string& name, float value)
 	{
 		glUseProgram(m_RendererID);
-		glUniform1f(glGetUniformLocation(m_RendererID, name.c_str()), value);
+		auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		if(location != -1)
+			glUniform1f(location, value);
+		else 
+			RE_LOG_UNIFORM("Uniform '{0}' not found!", name);
+	}
+
+	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& values)
+	{
+		glUseProgram(m_RendererID);
+		auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		if (location != -1)
+			glUniform3f(location, values.x, values.y, values.z);
+		else
+			RE_LOG_UNIFORM("Uniform '{0}' not found!", name);
 	}
 
 	void OpenGLShader::UploadUniformFloat4(const std::string& name, const glm::vec4& values)
 	{
 		glUseProgram(m_RendererID);
-		glUniform4f(glGetUniformLocation(m_RendererID, name.c_str()), values.x, values.y, values.z, values.w);
+		auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		if (location != -1)
+			glUniform4f(location, values.x, values.y, values.z, values.w);
+		else
+			RE_LOG_UNIFORM("Uniform '{0}' not found!", name);
+
 	}
 
+	void OpenGLShader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
+	{
+		glUseProgram(m_RendererID);
+		auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		if (location != -1)
+			glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
+		else
+			RE_LOG_UNIFORM("Uniform '{0}' not found!", name);
+	}
 
 	void OpenGLShader::UploadUniformBuffer(const UniformBufferBase& uniformBuffer)
 	{
@@ -160,10 +241,27 @@ namespace RockEngine
 					UploadUniformFloat(decl.Name, *(float*)(uniformBuffer.GetBuffer() + decl.Offset));
 				}
 				
+				case UniformType::Float3:
+				{
+					const std::string& name = decl.Name;
+					glm::vec3& values = *(glm::vec3*)(uniformBuffer.GetBuffer() + decl.Offset);
+					
+					UploadUniformFloat3(name, values);
+
+				}
+
 				case UniformType::Float4:
 				{
 					UploadUniformFloat4(decl.Name, *(glm::vec4*)(uniformBuffer.GetBuffer() + decl.Offset));
 				}
+
+				case UniformType::Matrix4x4:
+				{
+					const std::string& name = decl.Name;
+					glm::mat4& values = *(glm::mat4*)(uniformBuffer.GetBuffer() + decl.Offset);
+					UploadUniformMat4(name, values);
+				}
+
 			}
 		}
 	}

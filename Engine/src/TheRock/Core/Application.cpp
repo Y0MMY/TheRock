@@ -1,11 +1,15 @@
 #include "pch.h"
 #include "Application.h"
 
+#include "TheRock/Renderer/Renderer.h"
+#include "TheRock/Renderer/Framebuffer.h"
+#include <GLFW/glfw3.h>
+
 #include <imgui/imgui.h>
 
-#include "TheRock/Renderer/Renderer.h"
-
-#include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#include <Windows.h>
 
 namespace RockEngine
 {
@@ -53,7 +57,17 @@ namespace RockEngine
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
-		RE_CORE_INFO("Window Resize: {0}, {1}", e.GetWidth(), e.GetHeight());
+		int width = e.GetWidth();
+		int height = e.GetHeight();
+		Renderer::Submit(
+			[=]()
+			{ 
+				glViewport(0, 0, width, height);
+			}
+		);
+		auto& fbs = FramebufferPool::GetGlobal()->GetAll();
+		for (auto& fb : fbs)
+			fb->Resize(width, height);
 		return false;
 	}
 
@@ -73,7 +87,12 @@ namespace RockEngine
 	{
 		m_ImGuiLayer->Begin();
 		ImGui::Begin("Renderer");
+		auto& caps = RendererAPI::GetCapabilities();
+		ImGui::Text("Vendor: %s", caps.Vendor.c_str());
+		ImGui::Text("Renderer: %s", caps.Renderer.c_str());
+		ImGui::Text("Version: %s", caps.Version.c_str());
 		ImGui::End();
+
 		for (Layer* layer : m_LayerStack)
 			layer->OnImGuiRender();
 		m_ImGuiLayer->End();
@@ -92,6 +111,31 @@ namespace RockEngine
 			m_Window->OnUpdate();
 		}
 		OnShutdown();
+	}
+
+	std::string Application::OpenFile(const std::string& filter) const
+	{
+		OPENFILENAMEA ofn;       // common dialog box structure
+		CHAR szFile[260] = { 0 };       // if using TCHAR macros
+
+		// Initialize OPENFILENAME
+		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetNativeWindow());
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = filter.c_str();
+		ofn.nFilterIndex = 1;
+		ofn.lpstrFileTitle = NULL;
+		ofn.nMaxFileTitle = 0;
+		ofn.lpstrInitialDir = NULL;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+		if (GetOpenFileNameA(&ofn) == TRUE)
+		{
+			return ofn.lpstrFile;
+		}
+		return std::string();
 	}
 
 }

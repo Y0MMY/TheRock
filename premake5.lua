@@ -26,7 +26,6 @@ group "Dependencies"
 include "Engine/vendor/GLFW"
 include "Engine/vendor/Glad"
 include "Engine/vendor/ImGui"
-
 group ""
 
 
@@ -60,7 +59,8 @@ project "Engine"
         "%{IncludeDir.Glad}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.glm}",
-
+        "%{prj.name}/vendor/assimp/include",
+        "%{prj.name}/vendor/stb/include"
 	}
     
     links
@@ -147,6 +147,7 @@ project "Sandbox"
         
         links
         {
+            "Engine/vendor/assimp/win64/assimp.lib",
             "Engine/vendor/ImGui/bin/Debug-windows-x86_64/ImGui/ImGui.lib",
         }
 

@@ -20,17 +20,20 @@ namespace RockEngine {
 			});
 	}
 
-	void Renderer::DrawIndexed(u32 count)
+	void Renderer::DrawIndexed(u32 count, bool depthTest)
 	{
 		Renderer::Submit([=]()
 			{
-				RendererAPI::DrawIndexed(count);
+				RendererAPI::DrawIndexed(count, depthTest);
 			});
 	}
 
 	void Renderer::Clear()
 	{
-		// HZ_RENDER(Clear());
+		Renderer::Submit([=]()
+			{
+				RendererAPI::Clear(0.0f, 0.0f, 0.0f, 1.0f);
+			});
 	}
 
 	void Renderer::Clear(float r, float g, float b, float a)
