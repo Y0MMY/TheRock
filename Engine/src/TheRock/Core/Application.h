@@ -1,8 +1,11 @@
 #pragma once
 
 #include "TheRock/Core/Base.h"
-#include "Window.h"
+#include "TheRock/Core/Timestep.h"
+
 #include "TheRock/Core/LayerStack.h"
+
+#include "Window.h"
 
 #include "TheRock/ImGui/ImGuiLayer.h"
 
@@ -27,7 +30,7 @@ namespace RockEngine
 
 		virtual void OnInit() {}
 		virtual void OnShutdown() {}
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(Timestep ts) {}
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
@@ -38,6 +41,7 @@ namespace RockEngine
 		static inline Application& Get() { return *s_Instance; }
 
 		std::string OpenFile(const std::string& filter = "All\0*.*\0") const;
+		float GetTime() const; // TODO: This should be in "Platform"
 	private:
 		bool OnWindowResize(WindowResizeEvent& e);
 		bool OnWindowClose(WindowCloseEvent& e);
@@ -48,6 +52,12 @@ namespace RockEngine
 
 		Scope<Window> m_Window;
 		bool m_Running = true;
+		bool m_Minimized = false;
+
+		Timestep m_Timestep;
+
+		float m_LastFrameTime = 0.0f;
+
 	};
 
 	// Implemented by CLIENT

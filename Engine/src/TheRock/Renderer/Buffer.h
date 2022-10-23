@@ -21,7 +21,7 @@ namespace RockEngine
 		static IndexBuffer* Create(u32 size = 0);
 	};
 
-	class VertexBuffer : public RefCounted
+	class VertexBuffer
 	{
 	public:
 		virtual ~VertexBuffer() {}

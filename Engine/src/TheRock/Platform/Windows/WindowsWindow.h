@@ -37,5 +37,6 @@ namespace RockEngine
 			EventCallbackFn EventCallback;
 		};
 		WindowData m_Data;
+		float m_LastFrameTime = 0.0f;
 	};
 }

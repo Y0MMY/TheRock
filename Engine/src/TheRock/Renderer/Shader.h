@@ -2,6 +2,11 @@
 
 #include "TheRock/Core/Base.h"
 #include "TheRock/Renderer/Renderer.h"
+#include "TheRock/Core/Buffer.h"
+
+#include "TheRock/Core/Ref.h"
+
+#include "TheRock/Renderer/ShaderUniform.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -10,6 +15,16 @@
 
 namespace RockEngine
 {
+	struct ShaderUniform
+	{
+
+	};
+
+	struct ShaderUniformCollection
+	{
+
+	};
+
 	enum class UniformType
 	{
 		None = 0,
@@ -33,7 +48,6 @@ namespace RockEngine
 		// this currently does not assume any alignment. This also has
 		// nothing to do with GL uniform buffers, this is simply a CPU-side
 		// buffer abstraction.
-
 		byte* Buffer;
 		std::vector<UniformDecl> Uniforms;
 	};
@@ -42,32 +56,38 @@ namespace RockEngine
 	{
 		virtual const byte* GetBuffer() const = 0;
 		virtual const UniformDecl* GetUniforms() const = 0;
-		virtual u32 GetUniformCount() const = 0;
-
+		virtual unsigned int GetUniformCount() const = 0;
 	};
 
-	template<u32 N, u32 U>
+	template<unsigned int N, unsigned int U>
 	struct UniformBufferDeclaration : public UniformBufferBase
 	{
 		byte Buffer[N];
 		UniformDecl Uniforms[U];
-
 		std::ptrdiff_t Cursor = 0;
 		int Index = 0;
 
 		virtual const byte* GetBuffer() const override { return Buffer; }
 		virtual const UniformDecl* GetUniforms() const override { return Uniforms; }
-		virtual u32 GetUniformCount() const override { return U; }
+		virtual unsigned int GetUniformCount() const { return U; }
 
 		template<typename T>
 		void Push(const std::string& name, const T& data) {}
-		
+
 		template<>
 		void Push(const std::string& name, const float& data)
 		{
 			Uniforms[Index++] = { UniformType::Float, Cursor, name };
 			memcpy(Buffer + Cursor, &data, sizeof(float));
 			Cursor += sizeof(float);
+		}
+
+		template<>
+		void Push(const std::string& name, const glm::vec3& data)
+		{
+			Uniforms[Index++] = { UniformType::Float3, Cursor, name };
+			memcpy(Buffer + Cursor, glm::value_ptr(data), sizeof(glm::vec3));
+			Cursor += sizeof(glm::vec3);
 		}
 
 		template<>
@@ -86,19 +106,13 @@ namespace RockEngine
 			Cursor += sizeof(glm::mat4);
 		}
 
-		template<>
-		void Push(const std::string& name, const glm::vec3& data)
-		{
-			Uniforms[Index++] = { UniformType::Float3, Cursor, name };
-			memcpy(Buffer + Cursor, glm::value_ptr(data), sizeof(glm::vec3));
-			Cursor += sizeof(glm::vec3);
-		}
-
 	};
 
 	class Shader
 	{
 	public:
+		using ShaderReloadedCallback = std::function<void()>;
+
 		virtual void Reload() = 0;
 
 		virtual void Bind() = 0;
@@ -107,6 +121,7 @@ namespace RockEngine
 		// Temporary while we don't have materials
 		virtual void SetFloat(const std::string& name, float value) = 0;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
+		virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value) = 0;
 
 		virtual const std::string& GetName() const = 0;
 
@@ -115,8 +130,20 @@ namespace RockEngine
 		//       in the future this will be an asset object + metadata
 		static Shader* Create(const std::string& filepath);
 
+		virtual void SetVSMaterialUniformBuffer(Buffer buffer) = 0;
+		virtual void SetPSMaterialUniformBuffer(Buffer buffer) = 0;
+
+		virtual const ShaderUniformBufferList& GetVSRendererUniforms() const = 0;
+		virtual const ShaderUniformBufferList& GetPSRendererUniforms() const = 0;
+		virtual const ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const = 0;
+		virtual const ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const = 0;
+
+		virtual const ShaderResourceList& GetResources() const = 0;
+
+		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) = 0;
+
 		// Temporary, before we have an asset manager
 		static std::vector<Shader*> s_AllShaders;
-
 	};
+
 }

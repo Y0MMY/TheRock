@@ -16,11 +16,11 @@ namespace RockEngine
 	Camera::Camera(const glm::mat4& projectionMatrix)
 	{
 		// Sensible defaults
-		m_PanSpeed = 0.0015f;
-		m_RotationSpeed = 0.002f;
-		m_ZoomSpeed = 0.2f;
+		m_PanSpeed = 0.15f;
+		m_RotationSpeed = 0.3f;
+		m_ZoomSpeed = 1.0f;
 
-		m_Position = { -100, 100, 100 };
+		m_Position = { -5, 5, 5 };
 		m_Rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 
 		m_FocalPoint = glm::vec3(0.0f);
@@ -34,13 +34,15 @@ namespace RockEngine
 	{
 	}
 
-	void Camera::Update()
+	void Camera::Update(Timestep ts)
 	{
 		if (Input::IsKeyPressed(KeyCode::LeftAlt))
 		{
 			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			glm::vec2 delta = mouse - m_InitialMousePosition;
 			m_InitialMousePosition = mouse;
+
+			delta *= ts.GetSeconds();
 
 			if (Input::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
 				MousePan(delta);
@@ -56,6 +58,8 @@ namespace RockEngine
 		m_Rotation = glm::eulerAngles(orientation) * (180.0f / (float)M_PI);
 		m_ViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 1)) * glm::toMat4(glm::conjugate(orientation)) * glm::translate(glm::mat4(1.0f), -m_Position);
 
+		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
+		m_ViewMatrix = glm::inverse(m_ViewMatrix);
 	}
 
 	void Camera::MousePan(const glm::vec2& delta)

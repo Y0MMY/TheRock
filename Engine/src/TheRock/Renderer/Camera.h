@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "TheRock/Core/TimeStep.h"
+
 namespace RockEngine {
 
 	class Camera
@@ -10,7 +12,7 @@ namespace RockEngine {
 		Camera(const glm::mat4& projectionMatrix);
 
 		void Focus();
-		void Update();
+		void Update(Timestep ts);
 
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }

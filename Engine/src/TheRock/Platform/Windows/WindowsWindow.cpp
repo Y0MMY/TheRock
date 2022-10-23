@@ -155,6 +155,10 @@ namespace RockEngine
 				KeyTypedEvent event((KeyCode)codepoint);
 				data.EventCallback(event);
 			});
+
+		float time = glfwGetTime();
+		float delta = time - m_LastFrameTime;
+		m_LastFrameTime = time;
 	}
 
 

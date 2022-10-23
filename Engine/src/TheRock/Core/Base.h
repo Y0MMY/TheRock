@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-//#include "Ref.h"  TODO: Make a ref system
+//#include "Ref.h"  //TODO: Make a ref system: Done
 
 namespace RockEngine
 {
@@ -42,6 +42,9 @@ namespace RockEngine
 	{
 		return std::make_unique<T>(std::forward<Args>(args)...);
 	}
+
+	template<typename T>
+	using Ref = std::shared_ptr<T>;
 
 	// unsigned char
 	using byte = uint8_t;

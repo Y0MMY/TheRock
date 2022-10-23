@@ -59,6 +59,12 @@ namespace RockEngine
 	{
 		int width = e.GetWidth();
 		int height = e.GetHeight();
+		if (width == 0 && height == 0)
+		{
+			m_Minimized = true;
+			return false;
+		}
+		m_Minimized = false;
 		Renderer::Submit(
 			[=]()
 			{ 
@@ -91,6 +97,7 @@ namespace RockEngine
 		ImGui::Text("Vendor: %s", caps.Vendor.c_str());
 		ImGui::Text("Renderer: %s", caps.Renderer.c_str());
 		ImGui::Text("Version: %s", caps.Version.c_str());
+		ImGui::Text("Frame Time: %.2fms\n", m_Timestep.GetMilliseconds());
 		ImGui::End();
 
 		for (Layer* layer : m_LayerStack)
@@ -103,12 +110,18 @@ namespace RockEngine
 		OnInit();
 		while (m_Running)
 		{
+			if (m_Minimized) continue;
 			for (Layer* layer : m_LayerStack)
-				layer->OnUpdate();
+				layer->OnUpdate(m_Timestep);
 
 			Renderer::WaitAndRender();
 			RenderImGui();
 			m_Window->OnUpdate();
+
+			float time = GetTime();
+			m_Timestep = time - m_LastFrameTime;
+			m_LastFrameTime = time;
+
 		}
 		OnShutdown();
 	}
@@ -136,6 +149,11 @@ namespace RockEngine
 			return ofn.lpstrFile;
 		}
 		return std::string();
+	}
+
+	float Application::GetTime() const
+	{
+		return (float)glfwGetTime();
 	}
 
 }

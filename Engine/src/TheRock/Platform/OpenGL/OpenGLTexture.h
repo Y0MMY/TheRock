@@ -21,25 +21,34 @@ namespace RockEngine
 	class OpenGLTexture2D : public Texture2D
 	{
 	public:
-		OpenGLTexture2D(TextureFormat format, u32 width, u32 height);
+		OpenGLTexture2D(TextureFormat format, u32 width, u32 height, TextureWrap wrap);
 		OpenGLTexture2D(const std::string& path, bool srgb);
 		virtual ~OpenGLTexture2D() override;
 		
 		virtual void Bind(u32 slot = 0) const override;
 
 		virtual TextureFormat GetFormat() const { return m_Format; }
-		virtual unsigned int GetWidth() const { return m_Width; }
-		virtual unsigned int GetHeight() const { return m_Height; }
-
-		virtual const std::string& GetPath() const override { return m_FilePath; }
+		virtual u32 GetWidth() const { return m_Width; }
+		virtual u32 GetHeight() const { return m_Height; }
 
 		virtual RendererID GetRendererID() const override { return m_RendererID; }
+
+		virtual void Lock() override;
+		virtual void Unlock() override;
+
+		virtual void Resize(uint32_t width, uint32_t height) override;
+		virtual Buffer GetWriteableBuffer() override;
+
+		virtual const std::string& GetPath() const override { return m_FilePath; }
 	private:
 		RendererID m_RendererID;
 		TextureFormat m_Format;
 		u32 m_Width, m_Height;
+		TextureWrap m_Wrap = TextureWrap::Clamp;
 
-		byte* m_ImageData;
+		bool m_Locked = false;
+
+		Buffer m_ImageData;
 
 		std::string m_FilePath;
 	};
@@ -50,7 +59,7 @@ namespace RockEngine
 		OpenGLTextureCube(const std::string& path);
 		virtual ~OpenGLTextureCube();
 
-		virtual void Bind(unsigned int slot = 0);
+		virtual void Bind(u32 slot = 0) const override;
 
 		virtual TextureFormat GetFormat() const { return m_Format; }
 		virtual unsigned int GetWidth() const { return m_Width; }

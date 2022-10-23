@@ -7,12 +7,12 @@
 namespace RockEngine
 {
 
-	Texture2D* Texture2D::Create(TextureFormat format, u32 width, u32 height)
+	Texture2D* Texture2D::Create(TextureFormat format, u32 width, u32 height, TextureWrap wrap)
 	{
 		switch (RendererAPI::Current())
 		{
 			case RendererAPIType::None:		return nullptr;
-			case RendererAPIType::OpenGL:	return new OpenGLTexture2D(format, width, height);
+			case RendererAPIType::OpenGL:	return new OpenGLTexture2D(format, width, height, wrap);
 		}
 		return nullptr;
 	}
@@ -35,6 +35,16 @@ namespace RockEngine
 			case RendererAPIType::OpenGL: return new OpenGLTextureCube(path);
 		}
 		return nullptr;
+	}
+
+	u32 Texture::GetBPP(TextureFormat format)
+	{
+		switch (format)
+		{
+		case TextureFormat::RGB:    return 3;
+		case TextureFormat::RGBA:   return 4;
+		}
+		return 0;
 	}
 
 }

@@ -23,4 +23,5 @@
 #include "TheRock/Renderer/Camera.h"
 #include "TheRock/Renderer/Texture.h"
 #include "TheRock/Renderer/Shader.h"
+#include "TheRock/Renderer/Material.h"
 // ---------------------------------------------------

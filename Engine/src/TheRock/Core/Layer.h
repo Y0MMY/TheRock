@@ -3,6 +3,8 @@
 #include "TheRock/Core/Base.h"
 #include "TheRock/Core/Events/Event.h"
 
+#include "TheRock/Core/Timestep.h"
+
 namespace RockEngine
 {
 	class Layer
@@ -13,7 +15,7 @@ namespace RockEngine
 
 		virtual void OnAttach(){}
 		virtual void OnDetach(){}
-		virtual void OnUpdate(){}
+		virtual void OnUpdate(Timestep ts){}
 		virtual void OnEvent(Event& e){}
 
 		virtual void OnImGuiRender() {}

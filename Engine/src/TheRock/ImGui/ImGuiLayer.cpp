@@ -101,7 +101,6 @@ namespace RockEngine {
 
 	void ImGuiLayer::OnImGuiRender()
 	{
-		ImGui::ShowDemoWindow();
 
 	}
 
