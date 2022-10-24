@@ -19,6 +19,7 @@
 #include "TheRock/Renderer/Renderer.h"
 #include "TheRock/Renderer/FrameBuffer.h"
 #include "TheRock/Renderer/Buffer.h"
+#include "TheRock/Renderer/VertexArray.h"
 #include "TheRock/Renderer/Mesh.h"
 #include "TheRock/Renderer/Camera.h"
 #include "TheRock/Renderer/Texture.h"

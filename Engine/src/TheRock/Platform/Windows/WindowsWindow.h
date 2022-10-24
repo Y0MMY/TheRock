@@ -16,6 +16,8 @@ namespace RockEngine
 
 		inline u32 GetWidth() const override { return m_Data.Width; }
 		inline u32 GetHeight() const override { return m_Data.Height; }
+		virtual std::pair<float, float> GetWindowPos() const override;
+
 
 		inline void* GetNativeWindow() const override { return m_Window; }
 

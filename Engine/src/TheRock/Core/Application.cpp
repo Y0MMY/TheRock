@@ -26,6 +26,7 @@ namespace RockEngine
 		PushOverlay(m_ImGuiLayer);
 
 		Renderer::Init();
+		Renderer::WaitAndRender();
 	}
 
 	void Application::OnEvent(Event& e)

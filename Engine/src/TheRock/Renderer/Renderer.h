@@ -5,6 +5,8 @@
 
 namespace RockEngine
 {
+	class ShaderLibrary;
+
 	class Renderer
 	{
 	public:
@@ -15,6 +17,8 @@ namespace RockEngine
 
 		static void ClearMagenta();
 		static void Init();
+
+		static const Ref<ShaderLibrary>& GetShaderLibrary();
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Renderer.h"
+#include "Shader.h"
 
 namespace RockEngine {
 
@@ -8,16 +9,28 @@ namespace RockEngine {
 	struct RendererData
 	{
 		RenderCommandQueue m_CommandQueue;
+		Ref<ShaderLibrary> m_ShaderLibrary;
 	};
 
 	static RendererData s_Data;
 
 	void Renderer::Init()
 	{
+		s_Data.m_ShaderLibrary = std::make_shared<ShaderLibrary>();
 		Renderer::Submit([=]() mutable
 			{
 				RendererAPI::Init();
 			});
+
+		Renderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
+		Renderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
+
+	}
+
+
+	const Ref<ShaderLibrary>& Renderer::GetShaderLibrary()
+	{
+		return s_Data.m_ShaderLibrary;
 	}
 
 	void Renderer::DrawIndexed(u32 count, bool depthTest)

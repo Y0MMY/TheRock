@@ -14,7 +14,7 @@ namespace RockEngine
 		}
 		else
 		{
-			RE_CORE_TRACE("{0}", message);
+			//RE_CORE_TRACE("{0}", message);
 		}
 
 	}
@@ -24,7 +24,7 @@ namespace RockEngine
 	{
 		glDebugMessageCallback(OpenGLLogMessage, nullptr);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-
+		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEPTH_TEST);
 		//glEnable(GL_CULL_FACE);
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -48,7 +48,11 @@ namespace RockEngine
 			RE_CORE_ERROR("OpenGL Error {0}", error);
 			error = glGetError();
 		}
+		LoadRequiredAssets();
+	}
 
+	void RendererAPI::LoadRequiredAssets()
+	{
 	}
 
 	void RendererAPI::Shutdown()

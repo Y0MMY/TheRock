@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "TheRock/Renderer/VertexArray.h"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -16,6 +17,7 @@
 #include "TheRock/Core/Base.h"
 
 #include "TheRock/Renderer/Shader.h"
+#include "TheRock/Renderer/Material.h"
 
 struct aiNode;
 struct aiAnimation;
@@ -30,6 +32,15 @@ namespace Assimp
 namespace RockEngine
 {
 	struct Vertex
+	{
+		glm::vec3 Position;
+		glm::vec3 Normal;
+		glm::vec3 Tangent;
+		glm::vec3 Binormal;
+		glm::vec2 Texcoord;
+	};
+
+	struct AnimatedVertex
 	{
 		glm::vec3 Position;
 		glm::vec3 Normal;
@@ -101,6 +112,8 @@ namespace RockEngine
 		u32 BaseIndex;
 		u32 MaterialIndex;
 		u32 IndexCount;
+
+		glm::mat4 Transform;
 	};
 
 	class Mesh
@@ -109,14 +122,19 @@ namespace RockEngine
 		Mesh(const std::string& filename);
 		~Mesh();
 
-		void Render(Timestep ts, Shader* shader);
+		void Render(Timestep ts, Ref<MaterialInstance> materialInstance = Ref<MaterialInstance>());
+		void Render(Timestep ts, const glm::mat4& transform = glm::mat4(1.0f), Ref<MaterialInstance> materialInstance = Ref<MaterialInstance>());
+
 		void OnImGuiRender();
 		void DumpVertexBuffer();
 
+		inline Ref<Shader> GetMeshShader() { return m_MeshShader; }
+		inline Ref<Material> GetMaterial() { return m_Material; }
 		inline const std::string& GetFilePath() const { return m_FilePath; }
 	private:
 		void BoneTransform(float time);
 		void ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
+		void TraverseNodes(aiNode* node, int level = 0);
 
 		const aiNodeAnim* FindNodeAnim(const aiAnimation* animation, const std::string& nodeName);
 		u32 FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
@@ -137,16 +155,21 @@ namespace RockEngine
 		std::vector<glm::mat4> m_BoneTransforms;
 		const aiScene* m_Scene;
 
-		std::vector<Vertex> m_Vertices;
+		std::vector<Vertex> m_StaticVertices;
+		std::vector<AnimatedVertex> m_AnimatedVertices;
+
 		std::vector<Index> m_Indices;
 
-		std::unique_ptr<VertexBuffer> m_VertexBuffer;
-		std::unique_ptr<IndexBuffer> m_IndexBuffer;
+		Ref<VertexArray> m_VertexArray;
 
 		std::string m_FilePath;
 
+		// Materials
+		Ref<Shader> m_MeshShader;
+		Ref<Material> m_Material;
 
 		// Animation
+		bool m_IsAnimated = false;
 		float m_AnimationTime = 0.0f;
 		float m_WorldTime = 0.0f;
 		float m_TimeMultiplier = 1.0f;

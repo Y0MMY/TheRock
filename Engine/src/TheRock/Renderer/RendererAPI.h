@@ -35,6 +35,7 @@ namespace RockEngine
 			return capabilities;
 		}
 
+		static void LoadRequiredAssets();
 	public:
 		static RendererAPIType Current() { return s_CurrentRendererAPI; }
 	private:

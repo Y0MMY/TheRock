@@ -19,30 +19,45 @@ namespace RockEngine
 	{
 		size_t found = filepath.find_last_of("/\\");
 		m_Name = found != std::string::npos ? filepath.substr(found + 1) : filepath;
+		found = m_Name.find_last_of(".");
+		m_Name = found != std::string::npos ? m_Name.substr(0, found) : m_Name;
+
 		Reload();
+	}
+
+	Ref<OpenGLShader> OpenGLShader::CreateFromString(const std::string& source)
+	{
+		Ref<OpenGLShader> shader = std::make_shared<OpenGLShader>();
+		shader->Load(source);
+		return shader;
 	}
 
 	void OpenGLShader::Reload()
 	{
 		std::string source = ReadShaderFromFile(m_AssetPath);
-		m_ShaderSource = PreProcess(source);
-		Parse();
+		Load(source);
+	}
 
-		Renderer::Submit([this]() {
-			if (m_RendererID)
-				glDeleteShader(m_RendererID);
+	void OpenGLShader::Load(const std::string& source)
+	{
+			m_ShaderSource = PreProcess(source);
+			Parse();
 
-			CompileAndUploadShader();
-			ResolveUniforms();
-			ValidateUniforms();
+			Renderer::Submit([this]() {
+				if (m_RendererID)
+					glDeleteShader(m_RendererID);
 
-			if (m_Loaded)
-			{
-				for (auto& callback : m_ShaderReloadedCallbacks)
-					callback();
-			}
+				CompileAndUploadShader();
+				ResolveUniforms();
+				ValidateUniforms();
 
-			m_Loaded = true;
+				if (m_Loaded)
+				{
+					for (auto& callback : m_ShaderReloadedCallbacks)
+						callback();
+				}
+
+				m_Loaded = true;
 			});
 	}
 

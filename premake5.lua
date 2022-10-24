@@ -9,7 +9,7 @@ workspace "Engine"
         "Dist"
     }
     
-    startproject "Sandbox"
+    startproject "TheRock"
     
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
@@ -96,8 +96,8 @@ project "Engine"
 group ""
 
 group "Tools"
-project "Sandbox"
-    location "Sandbox"
+project "TheRock"
+    location "TheRock"
     kind "ConsoleApp"
     language "C++"
     staticruntime "off"
@@ -147,7 +147,7 @@ project "Sandbox"
         
         links
         {
-            "Engine/vendor/assimp/win64/assimp.lib",
+            "Engine/vendor/assimp/bin/Debug/assimp-vc141-mtd.lib",
             "Engine/vendor/ImGui/bin/Debug-windows-x86_64/ImGui/ImGui.lib",
         }
 

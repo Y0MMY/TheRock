@@ -26,19 +26,18 @@ namespace RockEngine
 	{
 		Renderer::Submit([this]()
 			{
-				GLenum wrap = m_Wrap == TextureWrap::Clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT;
-
 				glGenTextures(1, &m_RendererID);
 				glBindTexture(GL_TEXTURE_2D, m_RendererID);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);	// Set texture wrapping to GL_CLAMP_TO_EDGE
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-				// Set texture filtering
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				GLenum wrap = m_Wrap == TextureWrap::Clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 				glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, RendererAPI::GetCapabilities().MaxAnisotropy);
 
-				glTexImage2D(GL_TEXTURE_2D, 0, OpenGLTextureFormat(m_Format), m_Width, m_Height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+				glTexImage2D(GL_TEXTURE_2D, 0, OpenGLTextureFormat(m_Format), m_Width, m_Height, 0,
+					OpenGLTextureFormat(m_Format), GL_UNSIGNED_BYTE, nullptr);
 				glGenerateMipmap(GL_TEXTURE_2D);
 
 				glBindTexture(GL_TEXTURE_2D, 0);
@@ -49,7 +48,7 @@ namespace RockEngine
 	{
 		Renderer::Submit([=]()
 			{
-				glBindTexture(slot, m_RendererID);
+				glBindTextureUnit(slot, m_RendererID);
 			});
 	}
 
@@ -78,12 +77,12 @@ namespace RockEngine
 				{
 					glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 					int levels = CalculateMipMapCount(m_Width, m_Height);
+					RE_CORE_INFO("Creating srgb texture width {0} mips", levels);
 					glTextureStorage2D(m_RendererID, levels, GL_SRGB8, m_Width, m_Height);
-
 					glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 					glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-					glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, GL_RG8, GL_UNSIGNED_BYTE, m_ImageData.Data);
+					glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, GL_RGB, GL_UNSIGNED_BYTE, m_ImageData.Data);
 					glGenerateTextureMipmap(m_RendererID);
 				}
 				else
@@ -96,16 +95,14 @@ namespace RockEngine
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-
-					glTexImage2D(GL_TEXTURE_2D, 0, OpenGLTextureFormat(m_Format), m_Width, m_Height, 0, srgb ? GL_SRGB8 :
-						OpenGLTextureFormat(m_Format), GL_UNSIGNED_BYTE, m_ImageData.Data);
+					glTexImage2D(GL_TEXTURE_2D, 0, OpenGLTextureFormat(m_Format), m_Width, m_Height, 0, srgb ? GL_SRGB8 
+						: OpenGLTextureFormat(m_Format), GL_UNSIGNED_BYTE, m_ImageData.Data);
 					glGenerateMipmap(GL_TEXTURE_2D);
 
 					glBindTexture(GL_TEXTURE_2D, 0);
 				}
 				stbi_image_free(m_ImageData.Data);
-
-		});
+			});
 	}
 
 	void OpenGLTexture2D::Lock()
