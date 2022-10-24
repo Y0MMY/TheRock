@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "Shader.h"
 
+#include "TheRock/Renderer/Renderer.h"
 #include "TheRock/Platform/OpenGL/OpenGLShader.h"
+
 
 namespace RockEngine
 {

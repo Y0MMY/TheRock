@@ -1,7 +1,6 @@
 #pragma once
 
 #include "TheRock/Core/Base.h"
-#include "TheRock/Core/Ref.h"
 
 #include "TheRock/Renderer/Shader.h"
 #include "TheRock/Renderer/Texture.h"

@@ -10,6 +10,7 @@
 #include "TheRock/Core/Application.h"
 #include <GLFW/glfw3.h>
 
+#include "ImGuizmo.h"
 
 namespace RockEngine {
 
@@ -77,7 +78,7 @@ namespace RockEngine {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		//ImGuizmo::BeginFrame(); TODO: Add a ImGuizmo
+		ImGuizmo::BeginFrame();
 	}
 
 	void ImGuiLayer::End()

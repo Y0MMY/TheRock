@@ -1,7 +1,6 @@
 #pragma once
 
-#include "TheRock/Renderer/Renderer.h"
-#include "TheRock/Core/Ref.h"
+#include "RendererAPI.h"
 
 namespace RockEngine
 {

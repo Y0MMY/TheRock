@@ -1,7 +1,7 @@
 #include "pch.h"
-#include "Buffer.h"
 
-#include "TheRock/Platform/OpenGL/OpenGLBuffer.h"
+#include "Renderer.h"
+
 #include "TheRock/Platform/OpenGL/OpenGLBuffer.h"
 
 namespace RockEngine

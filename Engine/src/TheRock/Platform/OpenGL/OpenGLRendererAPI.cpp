@@ -3,6 +3,8 @@
 
 #include <Glad/glad.h>
 
+#include "TheRock/Renderer/Shader.h"
+
 namespace RockEngine
 {
 	static void OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)

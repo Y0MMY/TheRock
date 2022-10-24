@@ -1,17 +1,14 @@
 #pragma once
 
 #include "TheRock/Core/Base.h"
-#include "TheRock/Renderer/Renderer.h"
 #include "TheRock/Core/Buffer.h"
 
-#include "TheRock/Core/Ref.h"
-
+#include "TheRock/Renderer/RendererAPI.h"
 #include "TheRock/Renderer/ShaderUniform.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include <string>
+#include <glm/glm.hpp>
+
 
 namespace RockEngine
 {

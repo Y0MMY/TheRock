@@ -17,6 +17,7 @@
 // --- TheRock Render API ----------------------------
 #include "ImGui/imgui.h"
 #include "TheRock/Renderer/Renderer.h"
+#include "TheRock/Renderer/RenderPass.h"
 #include "TheRock/Renderer/FrameBuffer.h"
 #include "TheRock/Renderer/Buffer.h"
 #include "TheRock/Renderer/VertexArray.h"

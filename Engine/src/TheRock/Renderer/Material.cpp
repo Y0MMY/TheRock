@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Material.h"
 
-
 namespace RockEngine
 {
 	//////////////////////////////////////////////////////////////////////////////////
@@ -182,6 +181,8 @@ namespace RockEngine
 
 	void MaterialInstance::Bind() const
 	{
+		m_Material->m_Shader->Bind();
+
 		if (m_VSUniformStorageBuffer)
 			m_Material->m_Shader->SetVSMaterialUniformBuffer(m_VSUniformStorageBuffer);
 

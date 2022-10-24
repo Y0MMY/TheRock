@@ -1,21 +1,12 @@
 #pragma once
 
-#include <string>
-
 #include <vector>
+#include <glm/glm.hpp>
+
+#include "TheRock/Core/TimeStep.h"
 
 #include "TheRock/Renderer/VertexArray.h"
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-#include "TheRock/Core/Timestep.h"
-
-
 #include "TheRock/Renderer/Buffer.h"
-#include "TheRock/Core/Base.h"
-
 #include "TheRock/Renderer/Shader.h"
 #include "TheRock/Renderer/Material.h"
 
@@ -24,10 +15,10 @@ struct aiAnimation;
 struct aiNodeAnim;
 struct aiScene;
 
-namespace Assimp
-{
+namespace Assimp {
 	class Importer;
 }
+
 
 namespace RockEngine
 {
@@ -134,7 +125,7 @@ namespace RockEngine
 	private:
 		void BoneTransform(float time);
 		void ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
-		void TraverseNodes(aiNode* node, int level = 0);
+		void TraverseNodes(aiNode* node);
 
 		const aiNodeAnim* FindNodeAnim(const aiAnimation* animation, const std::string& nodeName);
 		u32 FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
@@ -174,5 +165,7 @@ namespace RockEngine
 		float m_WorldTime = 0.0f;
 		float m_TimeMultiplier = 1.0f;
 		bool m_AnimationPlaying = true;
+
+		friend class Renderer;
 	};
 }

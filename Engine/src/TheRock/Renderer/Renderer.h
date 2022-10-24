@@ -2,6 +2,9 @@
 
 #include "RenderCommandQueue.h"
 #include "RendererAPI.h"
+#include "RenderPass.h"
+
+#include "Mesh.h"
 
 namespace RockEngine
 {
@@ -36,6 +39,12 @@ namespace RockEngine
 			auto storageBuffer = GetRenderCommandQueue().Allocate(renderCmd, sizeof(func));
 			new (storageBuffer) FuncT(std::forward<FuncT>(func));
 		}
+
+		// ~Actual~ Renderer here... TODO: remove confusion later
+		static void BeginRenderPass(const Ref<RenderPass>& renderPass);
+		static void EndRenderPass();
+		void SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial);
+
 		static void WaitAndRender();
 		static void DrawIndexed(u32 count, bool depthTest = true);
 	private:

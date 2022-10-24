@@ -1,10 +1,9 @@
 #pragma once
 
 #include "TheRock/Core/Base.h"
-
 #include "TheRock/Core/Buffer.h"
+#include "RendererAPI.h"
 
-#include "TheRock/Renderer/Renderer.h"
 
 namespace RockEngine
 {

@@ -17,6 +17,8 @@
 
 #include "imgui/imgui.h"
 
+#include "TheRock/Renderer/Renderer.h"
+
 namespace RockEngine {
 
 	static const uint32_t s_MeshImportFlags =
@@ -228,12 +230,8 @@ namespace RockEngine {
 	{
 	}
 
-	void Mesh::TraverseNodes(aiNode* node, int level)
+	void Mesh::TraverseNodes(aiNode* node)
 	{
-		std::string levelText;
-		for (int i = 0; i < level; i++)
-			levelText += "-";
-		RE_CORE_TRACE("{0}Node name: {1}", levelText, std::string(node->mName.data));
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t mesh = node->mMeshes[i];
@@ -241,10 +239,7 @@ namespace RockEngine {
 		}
 
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
-		{
-			aiNode* child = node->mChildren[i];
-			TraverseNodes(child, level + 1);
-		}
+			TraverseNodes(node->mChildren[i]);
 	}
 
 	uint32_t Mesh::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
@@ -455,8 +450,8 @@ namespace RockEngine {
 						m_MeshShader->SetMat4FromRenderThread(uniformName, m_BoneTransforms[i]);
 					}
 				}
-				if (!materialOverride)
-					m_MeshShader->SetMat4FromRenderThread("u_ModelMatrix", transform * submesh.Transform);
+				//if (!materialOverride)
+					//m_MeshShader->SetMat4FromRenderThread("u_ModelMatrix", transform * submesh.Transform);
 				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
 			}
 			});

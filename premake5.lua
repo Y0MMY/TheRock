@@ -34,7 +34,7 @@ project "Engine"
     location "Engine"
     kind "StaticLib"
     language "C++"
-    staticruntime "off"
+    staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -65,10 +65,10 @@ project "Engine"
     
     links
     {
-        "opengl32.lib",
         "GLFW",
         "Glad",
         "ImGui",
+        "opengl32.lib",
 
     }
 
@@ -100,7 +100,7 @@ project "TheRock"
     location "TheRock"
     kind "ConsoleApp"
     language "C++"
-    staticruntime "off"
+    staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -127,6 +127,11 @@ project "TheRock"
         "%{IncludeDir.glm}"
     }
 	
+    postbuildcommands 
+	{
+		'{COPY} "../TheRock/assets" "%{cfg.targetdir}/assets"'
+	}
+
 	filter "system:windows"
         cppdialect "C++17"
         staticruntime "On"
@@ -150,6 +155,11 @@ project "TheRock"
             "Engine/vendor/assimp/bin/Debug/assimp-vc141-mtd.lib",
             "Engine/vendor/ImGui/bin/Debug-windows-x86_64/ImGui/ImGui.lib",
         }
+
+        postbuildcommands 
+		{
+			'{COPY} "../Engine/vendor/assimp/bin/Debug/assimp-vc141-mtd.dll" "%{cfg.targetdir}"'
+		}
 
     filter "configurations:Release"
         defines "RE_RELEASE"

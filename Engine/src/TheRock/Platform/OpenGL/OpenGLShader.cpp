@@ -1,8 +1,11 @@
 #include "pch.h"
 #include "OpenGLShader.h"
 
+#include "TheRock/Renderer/Renderer.h"
+
 #include <sstream>
 #include <limits>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace RockEngine
 {
