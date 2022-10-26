@@ -136,11 +136,6 @@ namespace RockEngine
 	{
 		glm::mat4 localTransform = Mat4FromAssimpMat4(node->mTransformation);
 		glm::mat4 transform = parentTransform * localTransform;
-		for (uint32_t i = 0; i < node->mNumMeshes; i++)
-		{
-			uint32_t meshIndex = node->mMeshes[i];
-			mesh->m_Submeshes[meshIndex].Transform = transform;
-		}
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
 		{

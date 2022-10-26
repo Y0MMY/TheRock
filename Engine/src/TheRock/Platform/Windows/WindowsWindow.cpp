@@ -38,6 +38,10 @@ namespace RockEngine
 	{
 		glfwPollEvents();
 		glfwSwapBuffers(m_Window);
+
+		float time = glfwGetTime();
+		float delta = time - m_LastFrameTime;
+		m_LastFrameTime = time;
 	}
 
 	void WindowsWindow::Init(const WindowProps& props)
@@ -156,9 +160,13 @@ namespace RockEngine
 				data.EventCallback(event);
 			});
 
-		float time = glfwGetTime();
-		float delta = time - m_LastFrameTime;
-		m_LastFrameTime = time;
+		// Update window size to actual size
+		{
+			int width, height;
+			glfwGetWindowSize(m_Window, &width, &height);
+			m_Data.Width = width;
+			m_Data.Height = height;
+		}
 	}
 
 	inline std::pair<float, float> WindowsWindow::GetWindowPos() const
@@ -167,7 +175,6 @@ namespace RockEngine
 		glfwGetWindowPos(m_Window, &x, &y);
 		return { x, y };
 	}
-
 
 	void WindowsWindow::Shutdown()
 	{

@@ -36,6 +36,7 @@ namespace RockEngine {
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Event& e) override;
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 
 		// ImGui UI helpers
 		bool Property(const std::string& name, bool& value);
@@ -49,7 +50,12 @@ namespace RockEngine {
 
 		void ShowBoundingBoxes(bool show, bool onTop = false);
 	private:
+		std::pair<float, float> GetMouseViewportSpace();
+		std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my);
+	private:
 		Scope<SceneHierarchyPanel> m_SceneHierarchyPanel;
+
+		glm::vec2 m_ViewportBounds[2];
 
 		Ref<Scene> m_Scene;
 		Ref<Scene> m_SphereScene;
@@ -127,6 +133,16 @@ namespace RockEngine {
 
 		bool m_UIShowBoundingBoxes = false;
 		bool m_UIShowBoundingBoxesOnTop = false;
+
+		float m_SnapValue = 0.5f;
+		struct SelectedSubmesh
+		{
+			Submesh* Mesh;
+			float Distance;
+		};
+		std::vector<SelectedSubmesh> m_SelectedSubmeshes;
+		glm::mat4* m_CurrentlySelectedTransform = nullptr;
+
 	};
 
 }

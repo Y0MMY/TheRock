@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Renderer2D.h"
+#include "TheRock/Renderer/Renderer2D.h"
 
 #include "TheRock/Renderer/VertexArray.h"
 #include "TheRock/Renderer/Shader.h"
@@ -7,13 +7,13 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace RockEngine
-{
+namespace RockEngine {
+
 	struct QuadVertex
 	{
 		glm::vec3 Position;
-		glm::vec2 TexCoord;
 		glm::vec4 Color;
+		glm::vec2 TexCoord;
 		float TexIndex;
 		float TilingFactor;
 	};
@@ -69,11 +69,8 @@ namespace RockEngine
 	void Renderer2D::Init()
 	{
 		s_Data.QuadVertexArray = VertexArray::Create();
+
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
-
-		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
-		uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
-
 		s_Data.QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float4, "a_Color" },
@@ -82,6 +79,10 @@ namespace RockEngine
 			{ ShaderDataType::Float, "a_TilingFactor" }
 			});
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
+
+		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
+
+		uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
 
 		uint32_t offset = 0;
 		for (uint32_t i = 0; i < s_Data.MaxIndices; i += 6)
@@ -96,6 +97,7 @@ namespace RockEngine
 
 			offset += 4;
 		}
+
 		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
 		s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
@@ -121,20 +123,25 @@ namespace RockEngine
 		s_Data.LineVertexArray = VertexArray::Create();
 
 		s_Data.LineVertexBuffer = VertexBuffer::Create(s_Data.MaxLineVertices * sizeof(LineVertex));
-
-		s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxLineVertices];
-		uint32_t* lineIndices = new uint32_t[s_Data.MaxLineIndices];
-
 		s_Data.LineVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float4, "a_Color" }
 			});
+		s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
+
+		s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxLineVertices];
+
+		uint32_t* lineIndices = new uint32_t[s_Data.MaxLineIndices];
 		for (uint32_t i = 0; i < s_Data.MaxLineIndices; i++)
 			lineIndices[i] = i;
 
 		Ref<IndexBuffer> lineIB = IndexBuffer::Create(lineIndices, s_Data.MaxLineIndices);
 		s_Data.LineVertexArray->SetIndexBuffer(lineIB);
 		delete[] lineIndices;
+	}
+
+	void Renderer2D::Shutdown()
+	{
 	}
 
 	void Renderer2D::BeginScene(const glm::mat4& viewProj, bool depthTest)
@@ -465,10 +472,6 @@ namespace RockEngine
 		s_Data.LineIndexCount += 2;
 
 		s_Data.Stats.LineCount++;
-	}
-
-	void Renderer2D::Shutdown()
-	{
 	}
 
 	void Renderer2D::ResetStats()

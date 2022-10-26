@@ -34,7 +34,7 @@ namespace RockEngine
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
-		virtual void Resize(u32 width, u32 height) = 0;
+		virtual void Resize(u32 width, u32 height,bool forceRecreate = false) = 0;
 
 		virtual void BindTexture(uint32_t slot = 0) const = 0;
 

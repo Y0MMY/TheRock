@@ -33,6 +33,7 @@ namespace RockEngine
 
 		virtual u32 GetWidth() const = 0;
 		virtual u32 GetHeight() const = 0;
+		virtual std::pair<uint32_t, uint32_t> GetSize() const = 0;
 		virtual std::pair<float, float> GetWindowPos() const = 0;
 
 		virtual void* GetNativeWindow() const = 0;

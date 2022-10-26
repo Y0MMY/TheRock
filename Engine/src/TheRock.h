@@ -15,6 +15,10 @@
 #include "TheRock/Core/Events/MouseEvent.h"
 // ---------------------------------------------------
 
+#include "TheRock/Core/Math/AABB.h"
+#include "TheRock/Core/Math/Ray.h"
+
+
 // --- TheRock Render API ----------------------------
 #include "ImGui/imgui.h"
 #include "TheRock/Renderer/Renderer.h"
