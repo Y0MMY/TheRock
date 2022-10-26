@@ -54,7 +54,7 @@ namespace RockEngine
 	{
 	}
 
-	void Camera::Update(Timestep ts)
+	void Camera::OnUpdate(Timestep ts)
 	{
 		if (Input::IsKeyPressed(KeyCode::LeftAlt))
 		{
@@ -130,6 +130,20 @@ namespace RockEngine
 	glm::quat Camera::GetOrientation()
 	{
 		return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
+	}
+
+	void Camera::OnEvent(Event& e)
+	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<MouseScrolledEvent>(BIND_EVENT_FN(Camera::OnMouseScroll));
+	}
+
+	bool Camera::OnMouseScroll(MouseScrolledEvent& e)
+	{
+
+		float delta = e.GetYOffset() * 0.1f;
+		MouseZoom(delta);
+		return false;
 	}
 
 }

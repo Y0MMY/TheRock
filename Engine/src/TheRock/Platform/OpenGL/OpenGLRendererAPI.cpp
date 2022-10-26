@@ -42,6 +42,8 @@ namespace RockEngine
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+		glEnable(GL_MULTISAMPLE);
+
 		auto& caps = RendererAPI::GetCapabilities();
 
 		caps.Vendor = (const char*)glGetString(GL_VENDOR);
@@ -50,6 +52,8 @@ namespace RockEngine
 
 		glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
+
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
 
 		GLenum error = glGetError();
 		while (error != GL_NO_ERROR)
@@ -69,16 +73,26 @@ namespace RockEngine
 
 	}
 
-	void RendererAPI::DrawIndexed(u32 count, bool depthTest)
+	void RendererAPI::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
 	{
 		if (!depthTest)
 			glDisable(GL_DEPTH_TEST);
 
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		GLenum glPrimitiveType = 0;
+		switch (type)
+		{
+		case PrimitiveType::Triangles:
+			glPrimitiveType = GL_TRIANGLES;
+			break;
+		case PrimitiveType::Lines:
+			glPrimitiveType = GL_LINES;
+			break;
+		}
+
+		glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
 
 		if (!depthTest)
 			glEnable(GL_DEPTH_TEST);
-
 	}
 
 	void RendererAPI::Clear(float r, float g, float b, float a)
@@ -92,4 +106,8 @@ namespace RockEngine
 		glClearColor(r, g, b, a);
 	}
 
+	void RendererAPI::SetLineThickness(float thickness)
+	{
+		glLineWidth(thickness);
+	}
 }

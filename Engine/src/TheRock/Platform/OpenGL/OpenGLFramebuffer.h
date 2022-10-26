@@ -26,6 +26,6 @@ namespace RockEngine
 		RendererID m_RendererID = 0;
 		FramebufferSpecification m_Specification;
 
-		RendererID m_ColorAttachment, m_DepthAttachment;
+		RendererID m_ColorAttachment = 0, m_DepthAttachment = 0;
 	};
 }

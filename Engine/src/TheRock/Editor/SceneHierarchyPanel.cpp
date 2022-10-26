@@ -23,6 +23,7 @@ namespace RockEngine
 		return to;
 	}
 
+
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
 		: m_Context(context)
 	{
@@ -37,19 +38,10 @@ namespace RockEngine
 	{
 		ImGui::Begin("Scene Hierarchy");
 
+		uint32_t entityCount = 0, meshCount = 0;
 		auto& sceneEntities = m_Context->m_Entities;
 		for (Entity* entity : sceneEntities)
-		{
-			auto mesh = entity->GetMesh();
-			auto material = entity->GetMaterial();
-			const auto& transform = entity->GetTransform();
-
-			if (mesh)
-			{
-				DrawMeshNode(mesh);
-			}
-
-		}
+			DrawEntityNode(entity, entityCount, meshCount);
 
 		ImGui::End();
 
@@ -90,10 +82,44 @@ namespace RockEngine
 					ImGui::SliderFloat("##AnimationTime", &mesh->m_AnimationTime, 0.0f, (float)mesh->m_Scene->mAnimations[0]->mDuration);
 					ImGui::DragFloat("Time Scale", &mesh->m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
 				}
-			}
-		}
+	}
+}
 		ImGui::End();
 #endif
+	}
+
+	void SceneHierarchyPanel::DrawEntityNode(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
+	{
+		const char* name = entity->GetName().c_str();
+		static char imguiName[128];
+		memset(imguiName, 0, 128);
+		sprintf(imguiName, "%s##%d", name, imguiEntityID++);
+		if (ImGui::TreeNode(imguiName))
+		{
+			auto mesh = entity->GetMesh();
+			auto material = entity->GetMaterial();
+			const auto& transform = entity->GetTransform();
+
+			if (mesh)
+				DrawMeshNode(mesh, imguiMeshID);
+
+			ImGui::TreePop();
+		}
+	}
+
+	void SceneHierarchyPanel::DrawMeshNode(const Ref<Mesh>& mesh, uint32_t& imguiMeshID)
+	{
+		static char imguiName[128];
+		memset(imguiName, 0, 128);
+		sprintf(imguiName, "Mesh##%d", imguiMeshID++);
+
+		// Mesh Hierarchy
+		if (ImGui::TreeNode(imguiName))
+		{
+			auto rootNode = mesh->m_Scene->mRootNode;
+			MeshNodeHierarchy(mesh, rootNode);
+			ImGui::TreePop();
+		}
 	}
 
 	static std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform)
@@ -139,11 +165,5 @@ namespace RockEngine
 
 	}
 
-	void SceneHierarchyPanel::DrawMeshNode(const Ref<Mesh>& mesh)
-	{
-		// Mesh Hierarchy
-		auto rootNode = mesh->m_Scene->mRootNode;
-		MeshNodeHierarchy(mesh, rootNode);
-	}
 
 }

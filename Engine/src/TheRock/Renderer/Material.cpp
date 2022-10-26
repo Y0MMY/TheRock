@@ -15,7 +15,7 @@ namespace RockEngine
 	Material::Material(const Ref<Shader>& shader)
 		: m_Shader(shader)
 	{
-		m_Shader->AddShaderReloadedCallback(std::bind(&Material::OnShaderReloaded, this));
+		m_Shader->AddShaderReloadedCallback(BIND_EVENT_FN(OnShaderReloaded));
 		AllocateStorage();
 
 		m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
@@ -45,6 +45,7 @@ namespace RockEngine
 
 	void Material::OnShaderReloaded()
 	{
+		return;
 		AllocateStorage();
 
 		for (auto mi : m_MaterialInstances)

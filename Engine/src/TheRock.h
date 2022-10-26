@@ -6,6 +6,7 @@
 
 #include "TheRock/Core/Application.h"
 #include "TheRock/Core/Log.h"
+#include "TheRock/Core/Input.h"
 
 // ------ Events ------------------------------------
 #include "TheRock/Core/Events/Event.h"
