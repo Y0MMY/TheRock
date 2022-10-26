@@ -7,23 +7,26 @@
 	
 namespace RockEngine
 {
-	static int CalculateMipMapCount(int width, int height)
+	static GLenum HazelToOpenGLTextureFormat(TextureFormat format)
 	{
-		int levels = 1;
-		while ((width | height) >> levels) {
-			levels++;
+		switch (format)
+		{
+		case RockEngine::TextureFormat::RGB:     return GL_RGB;
+		case RockEngine::TextureFormat::RGBA:    return GL_RGBA;
+		case RockEngine::TextureFormat::Float16: return GL_RGBA16F;
 		}
-		return levels;
+		RE_CORE_ASSERT(false, "Unknown texture format!");
+		return 0;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////
 	// Texture2D
 	//////////////////////////////////////////////////////////////////////////////////
 
-
-	OpenGLTexture2D::OpenGLTexture2D(TextureFormat format, u32 width, u32 height, TextureWrap wrap)
+	OpenGLTexture2D::OpenGLTexture2D(TextureFormat format, uint32_t width, uint32_t height, TextureWrap wrap)
 		: m_Format(format), m_Width(width), m_Height(height), m_Wrap(wrap)
 	{
+		auto self = this;
 		Renderer::Submit([this]()
 			{
 				glGenTextures(1, &m_RendererID);
@@ -36,27 +39,10 @@ namespace RockEngine
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 				glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, RendererAPI::GetCapabilities().MaxAnisotropy);
 
-				glTexImage2D(GL_TEXTURE_2D, 0, OpenGLTextureFormat(m_Format), m_Width, m_Height, 0,
-					OpenGLTextureFormat(m_Format), GL_UNSIGNED_BYTE, nullptr);
+				glTexImage2D(GL_TEXTURE_2D, 0, HazelToOpenGLTextureFormat(m_Format), m_Width, m_Height, 0, HazelToOpenGLTextureFormat(m_Format), GL_UNSIGNED_BYTE, nullptr);
 				glGenerateMipmap(GL_TEXTURE_2D);
 
 				glBindTexture(GL_TEXTURE_2D, 0);
-			});
-	}
-
-	void OpenGLTexture2D::Bind(u32 slot /* = 0 */) const
-	{
-		Renderer::Submit([=]()
-			{
-				glBindTextureUnit(slot, m_RendererID);
-			});
-	}
-
-	OpenGLTexture2D::~OpenGLTexture2D()
-	{
-		Renderer::Submit([=]()
-			{
-				glDeleteTextures(1, &m_RendererID);
 			});
 	}
 
@@ -64,20 +50,36 @@ namespace RockEngine
 		: m_FilePath(path)
 	{
 		int width, height, channels;
-		RE_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
-		m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
-		
+		if (stbi_is_hdr(path.c_str()))
+		{
+			RE_CORE_INFO("Loading HDR texture {0}, srgb={1}", path, srgb);
+			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 0);
+			m_IsHDR = true;
+			m_Format = TextureFormat::Float16;
+		}
+		else
+		{
+			RE_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
+			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
+			RE_CORE_ASSERT(m_ImageData.Data, "Could not read image!");
+			m_Format = TextureFormat::RGBA;
+		}
+
+		if (!m_ImageData.Data)
+			return;
+
+		m_Loaded = true;
+
 		m_Width = width;
 		m_Height = height;
-		m_Format = TextureFormat::RGBA;
 
-		Renderer::Submit([this, srgb]()
-		{
+		Renderer::Submit([=]()
+			{
+				// TODO: Consolidate properly
 				if (srgb)
 				{
 					glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-					int levels = CalculateMipMapCount(m_Width, m_Height);
-					RE_CORE_INFO("Creating srgb texture width {0} mips", levels);
+					int levels = Texture::CalculateMipMapCount(m_Width, m_Height);
 					glTextureStorage2D(m_RendererID, levels, GL_SRGB8, m_Width, m_Height);
 					glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 					glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -94,14 +96,31 @@ namespace RockEngine
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-					glTexImage2D(GL_TEXTURE_2D, 0, OpenGLTextureFormat(m_Format), m_Width, m_Height, 0, srgb ? GL_SRGB8 
-						: OpenGLTextureFormat(m_Format), GL_UNSIGNED_BYTE, m_ImageData.Data);
+					GLenum internalFormat = HazelToOpenGLTextureFormat(m_Format);
+					GLenum format = srgb ? GL_SRGB8 : (m_IsHDR ? GL_RGB : HazelToOpenGLTextureFormat(m_Format)); // HDR = GL_RGB for now
+					GLenum type = internalFormat == GL_RGBA16F ? GL_FLOAT : GL_UNSIGNED_BYTE;
+					glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, format, type, m_ImageData.Data);
 					glGenerateMipmap(GL_TEXTURE_2D);
 
 					glBindTexture(GL_TEXTURE_2D, 0);
 				}
 				stbi_image_free(m_ImageData.Data);
+			});
+	}
+
+	OpenGLTexture2D::~OpenGLTexture2D()
+	{
+		Renderer::Submit([this]() {
+			glDeleteTextures(1, &m_RendererID);
+			});
+	}
+
+	void OpenGLTexture2D::Bind(uint32_t slot) const
+	{
+		Renderer::Submit([this, slot]() {
+			glBindTextureUnit(slot, m_RendererID);
 			});
 	}
 
@@ -113,20 +132,19 @@ namespace RockEngine
 	void OpenGLTexture2D::Unlock()
 	{
 		m_Locked = false;
-		Renderer::Submit([=]()
-			{
-				glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, OpenGLTextureFormat(m_Format), GL_UNSIGNED_BYTE, m_ImageData.Data);
+		Renderer::Submit([this]() {
+			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, HazelToOpenGLTextureFormat(m_Format), GL_UNSIGNED_BYTE, m_ImageData.Data);
 			});
 	}
 
 	void OpenGLTexture2D::Resize(uint32_t width, uint32_t height)
 	{
 		RE_CORE_ASSERT(m_Locked, "Texture must be locked!");
+
 		m_ImageData.Allocate(width * height * Texture::GetBPP(m_Format));
 #if RE_DEBUG
 		m_ImageData.ZeroInitialize();
 #endif
-
 	}
 
 	Buffer OpenGLTexture2D::GetWriteableBuffer()
@@ -135,15 +153,39 @@ namespace RockEngine
 		return m_ImageData;
 	}
 
+	uint32_t OpenGLTexture2D::GetMipLevelCount() const
+	{
+		return Texture::CalculateMipMapCount(m_Width, m_Height);
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////
 	// TextureCube
 	//////////////////////////////////////////////////////////////////////////////////
 
+	OpenGLTextureCube::OpenGLTextureCube(TextureFormat format, uint32_t width, uint32_t height)
+	{
+		m_Width = width;
+		m_Height = height;
+		m_Format = format;
+
+		uint32_t levels = Texture::CalculateMipMapCount(width, height);
+
+		Renderer::Submit([=]() {
+			glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_RendererID);
+			glTextureStorage2D(m_RendererID, levels, HazelToOpenGLTextureFormat(m_Format), width, height);
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+			// glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, 16);
+			});
+	}
+
 	OpenGLTextureCube::OpenGLTextureCube(const std::string& path)
 		: m_FilePath(path)
 	{
-
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(false);
 		m_ImageData = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb);
@@ -152,14 +194,14 @@ namespace RockEngine
 		m_Height = height;
 		m_Format = TextureFormat::RGB;
 
-		u32 faceWidth = m_Width / 4;
-		u32 faceHeight = m_Height / 3;
-
+		uint32_t faceWidth = m_Width / 4;
+		uint32_t faceHeight = m_Height / 3;
 		RE_CORE_ASSERT(faceWidth == faceHeight, "Non-square faces!");
 
-		std::array<byte*, 6> faces;
+		std::array<unsigned char*, 6> faces;
 		for (size_t i = 0; i < faces.size(); i++)
-			faces[i] = new byte[faceWidth * faceHeight * 3];
+			faces[i] = new unsigned char[faceWidth * faceHeight * 3]; // 3 BPP
+
 		int faceIndex = 0;
 
 		for (size_t i = 0; i < 4; i++)
@@ -198,8 +240,7 @@ namespace RockEngine
 			faceIndex++;
 		}
 
-		Renderer::Submit([this, faceWidth, faceHeight, faces]()
-			{
+		Renderer::Submit([=]() {
 			glGenTextures(1, &m_RendererID);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 
@@ -207,9 +248,10 @@ namespace RockEngine
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 			glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, RendererAPI::GetCapabilities().MaxAnisotropy);
 
-			auto format = OpenGLTextureFormat(m_Format);
+			auto format = HazelToOpenGLTextureFormat(m_Format);
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, format, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[2]);
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, format, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[0]);
 
@@ -232,18 +274,22 @@ namespace RockEngine
 
 	OpenGLTextureCube::~OpenGLTextureCube()
 	{
-		Renderer::Submit([this]()
-		{
+		auto self = this;
+		Renderer::Submit([this]() {
 			glDeleteTextures(1, &m_RendererID);
-		});
+			});
 	}
 
-	void OpenGLTextureCube::Bind(unsigned int slot) const
+	void OpenGLTextureCube::Bind(uint32_t slot) const
 	{
-		Renderer::Submit([=]()
-		{
+		Renderer::Submit([this, slot]() {
 			glBindTextureUnit(slot, m_RendererID);
-		});
+			});
+	}
+
+	uint32_t OpenGLTextureCube::GetMipLevelCount() const
+	{
+		return Texture::CalculateMipMapCount(m_Width, m_Height);
 	}
 
 }

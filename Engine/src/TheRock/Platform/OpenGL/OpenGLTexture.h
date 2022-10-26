@@ -8,16 +8,6 @@
 
 namespace RockEngine
 {
-	static GLenum OpenGLTextureFormat(TextureFormat format)
-	{
-		switch (format)
-		{
-			case TextureFormat::RGB:	return GL_RGB;
-			case TextureFormat::RGBA:	return GL_RGBA;
-		}
-		return (int)TextureFormat::None;
-	}
-
 	class OpenGLTexture2D : public Texture2D
 	{
 	public:
@@ -31,7 +21,13 @@ namespace RockEngine
 		virtual u32 GetWidth() const { return m_Width; }
 		virtual u32 GetHeight() const { return m_Height; }
 
+		// This function currently returns the expected number of mips based on image size,
+		// not present mips in data
+		virtual uint32_t GetMipLevelCount() const override;
+
 		virtual RendererID GetRendererID() const override { return m_RendererID; }
+
+		virtual bool Loaded() const override { return m_Loaded; }
 
 		virtual void Lock() override;
 		virtual void Unlock() override;
@@ -46,7 +42,10 @@ namespace RockEngine
 		u32 m_Width, m_Height;
 		TextureWrap m_Wrap = TextureWrap::Clamp;
 
+		bool m_IsHDR = false;
+
 		bool m_Locked = false;
+		bool m_Loaded = false;
 
 		Buffer m_ImageData;
 
@@ -56,6 +55,7 @@ namespace RockEngine
 	class OpenGLTextureCube : public TextureCube
 	{
 	public:
+		OpenGLTextureCube(TextureFormat format, uint32_t width, uint32_t height);
 		OpenGLTextureCube(const std::string& path);
 		virtual ~OpenGLTextureCube();
 
@@ -64,6 +64,10 @@ namespace RockEngine
 		virtual TextureFormat GetFormat() const { return m_Format; }
 		virtual unsigned int GetWidth() const { return m_Width; }
 		virtual unsigned int GetHeight() const { return m_Height; }
+
+		// This function currently returns the expected number of mips based on image size,
+		// not present mips in data
+		virtual uint32_t GetMipLevelCount() const override;
 
 		virtual const std::string& GetPath() const override { return m_FilePath; }
 

@@ -9,14 +9,21 @@ namespace RockEngine
 {
 	static void OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 	{
-		if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+		switch (severity)
 		{
-			RE_CORE_ERROR("{0}", message);
-			RE_CORE_ASSERT(false, "");
-		}
-		else
-		{
-			//RE_CORE_TRACE("{0}", message);
+		case GL_DEBUG_SEVERITY_HIGH:
+			RE_CORE_ERROR("[OpenGL Debug HIGH] {0}", message);
+			RE_CORE_ASSERT(false, "GL_DEBUG_SEVERITY_HIGH");
+			break;
+		case GL_DEBUG_SEVERITY_MEDIUM:
+			RE_CORE_WARN("[OpenGL Debug MEDIUM] {0}", message);
+			break;
+		case GL_DEBUG_SEVERITY_LOW:
+			RE_CORE_INFO("[OpenGL Debug LOW] {0}", message);
+			break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION:
+			// RE_CORE_TRACE("[OpenGL Debug NOTIFICATION] {0}", message);
+			break;
 		}
 
 	}

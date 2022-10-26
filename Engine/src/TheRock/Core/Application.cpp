@@ -114,20 +114,25 @@ namespace RockEngine
 		OnInit();
 		while (m_Running)
 		{
-			if (m_Minimized) continue;
-			for (Layer* layer : m_LayerStack)
-				layer->OnUpdate(m_Timestep);
+			if (!m_Minimized)
+			{
+				for (Layer* layer : m_LayerStack)
+					layer->OnUpdate(m_Timestep);
 
-			Renderer::WaitAndRender();
-			RenderImGui();
+				// Render ImGui on render thread
+				Application* app = this;
+				Renderer::Submit([app]() { app->RenderImGui(); });
+
+				Renderer::WaitAndRender();
+			}
 			m_Window->OnUpdate();
 
 			float time = GetTime();
 			m_Timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
-
 		}
 		OnShutdown();
+
 	}
 
 	std::string Application::OpenFile(const std::string& filter) const

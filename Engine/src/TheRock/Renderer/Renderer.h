@@ -43,10 +43,13 @@ namespace RockEngine
 		// ~Actual~ Renderer here... TODO: remove confusion later
 		static void BeginRenderPass(const Ref<RenderPass>& renderPass);
 		static void EndRenderPass();
-		void SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial);
 
 		static void WaitAndRender();
 		static void DrawIndexed(u32 count, bool depthTest = true);
+
+		static void SubmitQuad(const Ref<MaterialInstance>& material, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitFullscreenQuad(const Ref<MaterialInstance>& material);
+		static void SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 	private:
 		static RenderCommandQueue& GetRenderCommandQueue();
 	};

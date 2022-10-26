@@ -13,14 +13,13 @@ namespace RockEngine
 	}
 
 	Material::Material(const Ref<Shader>& shader)
-		:m_Shader(shader)
+		: m_Shader(shader)
 	{
-		m_Shader->AddShaderReloadedCallback([this]()
-			{
-				this->OnShaderReloaded();
-			});
-
+		m_Shader->AddShaderReloadedCallback(std::bind(&Material::OnShaderReloaded, this));
 		AllocateStorage();
+
+		m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
+		m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;
 	}
 
 	Material::~Material()
@@ -29,13 +28,19 @@ namespace RockEngine
 
 	void Material::AllocateStorage()
 	{
-		const auto& vsBuffer = m_Shader->GetVSMaterialUniformBuffer();
-		m_VSUniformStorageBuffer.Allocate(vsBuffer.GetSize());
-		m_VSUniformStorageBuffer.ZeroInitialize();
+		if (m_Shader->HasVSMaterialUniformBuffer())
+		{
+			const auto& vsBuffer = m_Shader->GetVSMaterialUniformBuffer();
+			m_VSUniformStorageBuffer.Allocate(vsBuffer.GetSize());
+			m_VSUniformStorageBuffer.ZeroInitialize();
+		}
 
-		const auto& psBuffer = m_Shader->GetPSMaterialUniformBuffer();
-		m_PSUniformStorageBuffer.Allocate(psBuffer.GetSize());
-		m_PSUniformStorageBuffer.ZeroInitialize();
+		if (m_Shader->HasPSMaterialUniformBuffer())
+		{
+			const auto& psBuffer = m_Shader->GetPSMaterialUniformBuffer();
+			m_PSUniformStorageBuffer.Allocate(psBuffer.GetSize());
+			m_PSUniformStorageBuffer.ZeroInitialize();
+		}
 	}
 
 	void Material::OnShaderReloaded()
@@ -50,24 +55,22 @@ namespace RockEngine
 	{
 		if (m_VSUniformStorageBuffer)
 		{
-			auto& decls = m_Shader->GetVSMaterialUniformBuffer().GetUniformDeclarations();
-			for (ShaderUniformDeclaration* uniform : decls)
+			auto& declarations = m_Shader->GetVSMaterialUniformBuffer().GetUniformDeclarations();
+			for (ShaderUniformDeclaration* uniform : declarations)
 			{
 				if (uniform->GetName() == name)
 					return uniform;
 			}
-
 		}
 
 		if (m_PSUniformStorageBuffer)
 		{
-			auto& decls = m_Shader->GetPSMaterialUniformBuffer().GetUniformDeclarations();
-			for (ShaderUniformDeclaration* uniform : decls)
+			auto& declarations = m_Shader->GetPSMaterialUniformBuffer().GetUniformDeclarations();
+			for (ShaderUniformDeclaration* uniform : declarations)
 			{
 				if (uniform->GetName() == name)
 					return uniform;
 			}
-
 		}
 		return nullptr;
 	}
@@ -75,10 +78,10 @@ namespace RockEngine
 	ShaderResourceDeclaration* Material::FindResourceDeclaration(const std::string& name)
 	{
 		auto& resources = m_Shader->GetResources();
-		for (auto res : resources)
+		for (ShaderResourceDeclaration* resource : resources)
 		{
-			if (res->GetName() == name)
-				return res;
+			if (resource->GetName() == name)
+				return resource;
 		}
 		return nullptr;
 	}
@@ -87,8 +90,8 @@ namespace RockEngine
 	{
 		switch (uniformDeclaration->GetDomain())
 		{
-			case ShaderDomain::Vertex:    return m_VSUniformStorageBuffer;
-			case ShaderDomain::Pixel:     return m_PSUniformStorageBuffer;
+		case ShaderDomain::Vertex:    return m_VSUniformStorageBuffer;
+		case ShaderDomain::Pixel:     return m_PSUniformStorageBuffer;
 		}
 
 		RE_CORE_ASSERT(false, "Invalid uniform declaration domain! Material does not support this shader type.");
@@ -108,12 +111,12 @@ namespace RockEngine
 		BindTextures();
 	}
 
-	void Material::BindTextures() const {
-
-		for (int i = 0; i < m_Textures.size(); i++)
+	void Material::BindTextures() const
+	{
+		for (size_t i = 0; i < m_Textures.size(); i++)
 		{
 			auto& texture = m_Textures[i];
-			if(texture)
+			if (texture)
 				texture->Bind(i);
 		}
 	}
@@ -128,7 +131,7 @@ namespace RockEngine
 	}
 
 	MaterialInstance::MaterialInstance(const Ref<Material>& material)
-		:m_Material(material)
+		: m_Material(material)
 	{
 		m_Material->m_MaterialInstances.insert(this);
 		AllocateStorage();
@@ -147,14 +150,31 @@ namespace RockEngine
 
 	void MaterialInstance::AllocateStorage()
 	{
-		const auto& vsBuffer = m_Material->m_Shader->GetVSMaterialUniformBuffer();
-		m_VSUniformStorageBuffer.Allocate(vsBuffer.GetSize());
-		memcpy(m_VSUniformStorageBuffer.Data, m_Material->m_VSUniformStorageBuffer.Data, vsBuffer.GetSize());
+		if (m_Material->m_Shader->HasVSMaterialUniformBuffer())
+		{
+			const auto& vsBuffer = m_Material->m_Shader->GetVSMaterialUniformBuffer();
+			m_VSUniformStorageBuffer.Allocate(vsBuffer.GetSize());
+			memcpy(m_VSUniformStorageBuffer.Data, m_Material->m_VSUniformStorageBuffer.Data, vsBuffer.GetSize());
+		}
 
-		const auto& psBuffer = m_Material->m_Shader->GetPSMaterialUniformBuffer();
-		m_PSUniformStorageBuffer.Allocate(psBuffer.GetSize());
-		memcpy(m_PSUniformStorageBuffer.Data, m_Material->m_PSUniformStorageBuffer.Data, psBuffer.GetSize());
+		if (m_Material->m_Shader->HasPSMaterialUniformBuffer())
+		{
+			const auto& psBuffer = m_Material->m_Shader->GetPSMaterialUniformBuffer();
+			m_PSUniformStorageBuffer.Allocate(psBuffer.GetSize());
+			memcpy(m_PSUniformStorageBuffer.Data, m_Material->m_PSUniformStorageBuffer.Data, psBuffer.GetSize());
+		}
+	}
 
+	void MaterialInstance::SetFlag(MaterialFlag flag, bool value)
+	{
+		if (value)
+		{
+			m_Material->m_MaterialFlags |= (uint32_t)flag;
+		}
+		else
+		{
+			m_Material->m_MaterialFlags &= ~(uint32_t)flag;
+		}
 	}
 
 	void MaterialInstance::OnMaterialValueUpdated(ShaderUniformDeclaration* decl)
@@ -171,8 +191,8 @@ namespace RockEngine
 	{
 		switch (uniformDeclaration->GetDomain())
 		{
-			case ShaderDomain::Vertex:    return m_VSUniformStorageBuffer;
-			case ShaderDomain::Pixel:     return m_PSUniformStorageBuffer;
+		case ShaderDomain::Vertex:    return m_VSUniformStorageBuffer;
+		case ShaderDomain::Pixel:     return m_PSUniformStorageBuffer;
 		}
 
 		RE_CORE_ASSERT(false, "Invalid uniform declaration domain! Material does not support this shader type.");
@@ -190,12 +210,13 @@ namespace RockEngine
 			m_Material->m_Shader->SetPSMaterialUniformBuffer(m_PSUniformStorageBuffer);
 
 		m_Material->BindTextures();
-		for (int i = 0; i < m_Textures.size(); i++)
+		for (size_t i = 0; i < m_Textures.size(); i++)
 		{
 			auto& texture = m_Textures[i];
 			if (texture)
 				texture->Bind(i);
 		}
 	}
+
 
 }

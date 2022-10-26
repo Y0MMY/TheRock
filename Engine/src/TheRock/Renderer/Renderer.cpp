@@ -5,6 +5,7 @@
 
 #include <glad/glad.h>
 
+#include "SceneRenderer.h"
 
 namespace RockEngine {
 
@@ -15,6 +16,7 @@ namespace RockEngine {
 		Ref<RenderPass> m_ActiveRenderPass;
 		RenderCommandQueue m_CommandQueue;
 		Ref<ShaderLibrary> m_ShaderLibrary;
+		Ref<VertexArray> m_FullscreenQuadVertexArray;
 	};
 
 	static RendererData s_Data;
@@ -22,13 +24,51 @@ namespace RockEngine {
 	void Renderer::Init()
 	{
 		s_Data.m_ShaderLibrary = std::make_shared<ShaderLibrary>();
-		Renderer::Submit([=]() mutable
+		Renderer::Submit([]()
 			{
 				RendererAPI::Init();
 			});
 
 		Renderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
 		Renderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
+
+		SceneRenderer::Init();
+		// Create fullscreen quad
+		float x = -1;
+		float y = -1;
+		float width = 2, height = 2;
+		struct QuadVertex
+		{
+			glm::vec3 Position;
+			glm::vec2 TexCoord;
+		};
+
+		QuadVertex* data = new QuadVertex[4];
+
+		data[0].Position = glm::vec3(x, y, 0);
+		data[0].TexCoord = glm::vec2(0, 0);
+
+		data[1].Position = glm::vec3(x + width, y, 0);
+		data[1].TexCoord = glm::vec2(1, 0);
+
+		data[2].Position = glm::vec3(x + width, y + height, 0);
+		data[2].TexCoord = glm::vec2(1, 1);
+
+		data[3].Position = glm::vec3(x, y + height, 0);
+		data[3].TexCoord = glm::vec2(0, 1);
+
+		s_Data.m_FullscreenQuadVertexArray = VertexArray::Create();
+		auto quadVB = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		quadVB->SetLayout({
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float2, "a_TexCoord" }
+			});
+
+		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
+		auto quadIB = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+
+		s_Data.m_FullscreenQuadVertexArray->AddVertexBuffer(quadVB);
+		s_Data.m_FullscreenQuadVertexArray->SetIndexBuffer(quadIB);
 
 	}
 
@@ -40,6 +80,8 @@ namespace RockEngine {
 
 	void Renderer::BeginRenderPass(const Ref<RenderPass>& renderPass)
 	{
+		RE_CORE_ASSERT(renderPass, "Render pass cannot be null!");
+
 		// TODO: Convert all of this into a render command buffer
 		s_Data.m_ActiveRenderPass = renderPass;
 
@@ -53,36 +95,67 @@ namespace RockEngine {
 
 	void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial)
 	{
-		if (overrideMaterial)
-		{
-			overrideMaterial->Bind();
-		}
-		else
-		{
-			// Bind mesh material here
-		}
-
 		// TODO: Sort this out
 		mesh->m_VertexArray->Bind();
 
 		// TODO: replace with render API calls
-		Renderer::Submit([=]()
-			{
-				for (Submesh& submesh : mesh->m_Submeshes)
-				{
-					if (mesh->m_IsAnimated)
-					{
-						for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
-						{
-							std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-							mesh->m_MeshShader->SetMat4FromRenderThread(uniformName, mesh->m_BoneTransforms[i]);
-						}
-					}
+		auto& materials = mesh->GetMaterials();
+		for (Submesh& submesh : mesh->m_Submeshes)
+		{
+			auto material = materials[submesh.MaterialIndex];
+			auto shader = material->GetShader();
+			material->Bind();
 
-					glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+			if (mesh->m_IsAnimated)
+			{
+				for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+				{
+					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+					mesh->m_MeshShader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
 				}
-			});
+			}
+			shader->SetMat4("u_Transform", transform * submesh.Transform);
+
+			Renderer::Submit([submesh, material]() {
+				if (material->GetFlag(MaterialFlag::DepthTest))
+					glEnable(GL_DEPTH_TEST);
+				else
+					glDisable(GL_DEPTH_TEST);
+
+				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+				});
+		}
 	}
+
+	void Renderer::SubmitQuad(const Ref<MaterialInstance>& material, const glm::mat4& transform)
+	{
+		bool depthTest = true;
+		if (material)
+		{
+			material->Bind();
+			depthTest = material->GetFlag(MaterialFlag::DepthTest);
+
+			auto shader = material->GetShader();
+			shader->SetMat4("u_Transform", transform);
+		}
+
+		s_Data.m_FullscreenQuadVertexArray->Bind();
+		Renderer::DrawIndexed(6, depthTest);
+	}
+
+	void Renderer::SubmitFullscreenQuad(const Ref<MaterialInstance>& material)
+	{
+		bool depthTest = true;
+		if (material)
+		{
+			material->Bind();
+			depthTest = material->GetFlag(MaterialFlag::DepthTest);
+		}
+
+		s_Data.m_FullscreenQuadVertexArray->Bind();
+		Renderer::DrawIndexed(6, depthTest);
+	}
+
 
 	void Renderer::EndRenderPass()
 	{
